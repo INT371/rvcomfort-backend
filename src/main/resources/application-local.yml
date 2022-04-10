@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:${mariaDB4j.port}/rvcomfort?serverTimezone=Asia/Bangkok&useUnicode=yes&characterEncoding=UTF-8
+    username: root
+    password: ""
+  jpa:
+    properties:
+      hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
+      hibernate.generate_statistics: true
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration/main
+    url: jdbc:mysql://localhost:${mariaDB4j.port}/rvcomfort?serverTimezone=Asia/Bangkok&useUnicode=yes&characterEncoding=UTF-8&createDatabaseIfNotExist=true
+    user: root
+    password: ""
+
+mariaDB4j:
+  port: 3307
