@@ -8,7 +8,7 @@
 		<version>2.6.6</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>sit.int</groupId>
+	<groupId>sit.it</groupId>
 	<artifactId>rvcomfort</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>rvcomfort</name>
