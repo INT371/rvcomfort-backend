@@ -1,10 +1,12 @@
 package sit.it.rvcomfort.service;
 
-import sit.it.rvcomfort.model.request.room.NewRoomTypeRequest;
+import sit.it.rvcomfort.model.request.room.MultipleRoomTypeRequest;
 import sit.it.rvcomfort.model.request.room.RoomRequest;
+import sit.it.rvcomfort.model.request.room.RoomTypeRequest;
 import sit.it.rvcomfort.model.request.room.UpdateRoomTypeRequest;
 import sit.it.rvcomfort.model.response.RoomResponse;
 import sit.it.rvcomfort.model.response.RoomTypeResponse;
+import sit.it.rvcomfort.model.response.SaveRoomTypeResponse;
 
 import java.util.List;
 
@@ -26,17 +28,17 @@ public interface RoomService {
 
     RoomTypeResponse getRoomType(String roomTypeName);                      // return room type of given name
 
-    RoomTypeResponse addRoomType(NewRoomTypeRequest request);               // add new type of room
+    RoomTypeResponse addRoomType(RoomTypeRequest request);               // add new type of room
 
-    void addRoomTypeWithRooms(NewRoomTypeRequest request);                  // add new type of room along with new room
+    SaveRoomTypeResponse addRoomTypeWithRooms(MultipleRoomTypeRequest request);                  // add new type of room along with new room
 
     RoomResponse addRoomOfExistingType(RoomRequest request);                // add room of the existing type
 
-    void addMultipleRoomOfExistingType(List<RoomRequest> requests);         // add multiple room of the existing type
+    List<RoomResponse> addMultipleRoomOfExistingType(List<RoomRequest> requests);         // add multiple room of the existing type
 
     RoomTypeResponse updateRoomType(UpdateRoomTypeRequest request, int typeId);
 
-    RoomResponse editRoom(RoomRequest request, int roomId);
+    RoomResponse updateRoom(RoomRequest request, int roomId);
 
     void deleteRoomType(int typeId);
 

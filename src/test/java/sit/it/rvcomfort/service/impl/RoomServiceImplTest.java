@@ -18,8 +18,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import sit.it.rvcomfort.model.entity.Room;
 import sit.it.rvcomfort.model.entity.RoomType;
-import sit.it.rvcomfort.model.request.room.NewRoomTypeRequest;
 import sit.it.rvcomfort.model.request.room.RoomRequest;
+import sit.it.rvcomfort.model.request.room.RoomTypeRequest;
 import sit.it.rvcomfort.model.request.room.UpdateRoomTypeRequest;
 import sit.it.rvcomfort.model.response.RoomResponse;
 import sit.it.rvcomfort.model.response.RoomTypeResponse;
@@ -235,7 +235,7 @@ class RoomServiceImplTest {
         @Test
         void save_room_type_successfully() {
             // given
-            NewRoomTypeRequest newRoomTypeRequest = NewRoomTypeRequest.builder()
+            RoomTypeRequest roomTypeRequest = RoomTypeRequest.builder()
                     .typeName("Super Luxurious")
                     .description("Super Luxurious Room")
                     .maxCapacity(10)
@@ -257,7 +257,7 @@ class RoomServiceImplTest {
                     .thenReturn(expectRoomType);
 
             // when
-            RoomTypeResponse actualRoomType = service.addRoomType(newRoomTypeRequest);
+            RoomTypeResponse actualRoomType = service.addRoomType(roomTypeRequest);
 
             // then
             assertThat(actualRoomType).usingRecursiveComparison().isEqualTo(expectRoomType);
@@ -369,7 +369,7 @@ class RoomServiceImplTest {
                     .thenReturn(expectedRoom);
 
             // when
-            RoomResponse actualResponse = service.editRoom(request, roomBefore.getRoomId());
+            RoomResponse actualResponse = service.updateRoom(request, roomBefore.getRoomId());
 
             // then
             assertThat(actualResponse).usingRecursiveComparison().isEqualTo(expectedRoom);

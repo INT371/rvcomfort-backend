@@ -1,4 +1,4 @@
-package sit.it.rvcomfort.model.request.room;
+package sit.it.rvcomfort.model.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
@@ -6,8 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,23 +14,23 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class NewRoomTypeRequest implements Serializable {
+public class SaveRoomTypeResponse implements Serializable {
+
+    @JsonProperty("type_id")
+    private Integer typeId;
 
     @JsonProperty("type_name")
-    @NotBlank
     private String typeName;
 
     private String description;
 
-    @NotNull
     private BigDecimal price;
 
     @JsonProperty("max_capacity")
-    @NotNull
     private Integer maxCapacity;
 
     private String policy;
 
-    private List<RoomRequest> rooms;
+    private List<RoomResponse> rooms;
 
 }

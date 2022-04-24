@@ -9,19 +9,27 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RoomRequest implements Serializable {
+public class RoomTypeRequest implements Serializable {
 
+    @JsonProperty("type_name")
     @NotBlank
-    @JsonProperty("room_name")
-    private String roomName;
+    private String typeName;
+
+    private String description;
 
     @NotNull
-    @JsonProperty("type_id")
-    private Integer typeId;
+    private BigDecimal price;
+
+    @JsonProperty("max_capacity")
+    @NotNull
+    private Integer maxCapacity;
+
+    private String policy;
 
 }

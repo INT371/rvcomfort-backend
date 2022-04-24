@@ -9,19 +9,23 @@ import sit.it.rvcomfort.mapper.RoomMapper;
 import sit.it.rvcomfort.mapper.RoomTypeMapper;
 import sit.it.rvcomfort.model.entity.Room;
 import sit.it.rvcomfort.model.entity.RoomType;
-import sit.it.rvcomfort.model.request.room.NewRoomTypeRequest;
+import sit.it.rvcomfort.model.request.room.MultipleRoomTypeRequest;
 import sit.it.rvcomfort.model.request.room.RoomRequest;
+import sit.it.rvcomfort.model.request.room.RoomTypeRequest;
 import sit.it.rvcomfort.model.request.room.UpdateRoomTypeRequest;
 import sit.it.rvcomfort.model.response.RoomResponse;
 import sit.it.rvcomfort.model.response.RoomTypeResponse;
+import sit.it.rvcomfort.model.response.SaveRoomTypeResponse;
 import sit.it.rvcomfort.repository.RoomJpaRepository;
 import sit.it.rvcomfort.repository.RoomTypeJpaRepository;
 import sit.it.rvcomfort.service.RoomService;
 
+import javax.transaction.Transactional;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Transactional
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -87,7 +91,7 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public RoomTypeResponse addRoomType(NewRoomTypeRequest request) {
+    public RoomTypeResponse addRoomType(RoomTypeRequest request) {
         // STEP 1: TODO Validation
 
         // STEP 2: Mapped to entity
@@ -99,7 +103,7 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public void addRoomTypeWithRooms(NewRoomTypeRequest request) {
+    public SaveRoomTypeResponse addRoomTypeWithRooms(MultipleRoomTypeRequest request) {
         // STEP 1: Add New RoomType
         // STEP 1.1: TODO Validation + Validate if rooms are available
 
@@ -109,7 +113,16 @@ public class RoomServiceImpl implements RoomService {
         RoomType savedRoom = roomTypeRepo.save(roomType);
 
         // STEP 2: Add new room         // TODO: This need to be change in the future
-        this.addMultipleRoomOfExistingType(request.getRooms());
+        List<RoomRequest> roomList = request.getRooms().stream()
+                .peek(room -> room.setTypeId(savedRoom.getTypeId()))
+                .collect(Collectors.toList());
+        List<RoomResponse> roomResponses = this.addMultipleRoomOfExistingType(roomList);
+
+        // STEP 3: Mapped and return
+        SaveRoomTypeResponse response = RoomTypeMapper.INSTANCE.addFrom(savedRoom);
+        response.setRooms(roomResponses);
+
+        return response;
     }
 
     @Override
@@ -132,9 +145,10 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public void addMultipleRoomOfExistingType(List<RoomRequest> requests) {
-        requests.stream()
-                .forEach(this::addRoomOfExistingType);
+    public List<RoomResponse> addMultipleRoomOfExistingType(List<RoomRequest> requests) {
+        return requests.stream()
+                .map(this::addRoomOfExistingType)
+                .collect(Collectors.toList());
         // TODO: This need to be change in the future
     }
 
@@ -144,12 +158,11 @@ public class RoomServiceImpl implements RoomService {
         // STEP 1.1:
 
         // STEP 1.2: Validate exist room type
-        roomTypeRepo.findById(typeId)
-                .orElseThrow(() -> new RuntimeException("")); // TODO: Exception thrown
+        RoomType roomType = roomTypeRepo.findById(typeId)
+                .orElseThrow(() -> new RuntimeException(""));// TODO: Exception thrown
 
         // STEP 2: Mapped request to entity
-        RoomType roomType = RoomTypeMapper.INSTANCE.from(request);
-        roomType.setTypeId(typeId);
+        RoomTypeMapper.INSTANCE.update(roomType, request);
 
         // STEP 3: Save room type to database
         RoomType updatedRoomType = roomTypeRepo.save(roomType);
@@ -159,10 +172,10 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public RoomResponse editRoom(RoomRequest request, int roomId) {
+    public RoomResponse updateRoom(RoomRequest request, int roomId) {
         // STEP 1: Validation
-        // STEP 1.1: Validate exist room
-        roomRepo.findById(roomId)
+        // STEP 1.1: Retrieve exist room
+        Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new RuntimeException("")); // TODO: Exception thrown
 
         // STEP 1.2: Retrieve room type
@@ -170,7 +183,7 @@ public class RoomServiceImpl implements RoomService {
                 .orElseThrow(() -> new RuntimeException(""));// TODO: Exception thrown
 
         // STEP 2: Mapped request to entity
-        Room room = RoomMapper.INSTANCE.from(request, roomType);
+        RoomMapper.INSTANCE.update(room, request, roomType);
         room.setUpdatedAt(ZonedDateTime.now());
 
         // STEP 3: Save room to database
