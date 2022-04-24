@@ -26,17 +26,17 @@ public interface RoomService {
 
     RoomTypeResponse getRoomType(String roomTypeName);                      // return room type of given name
 
-    void addRoomType(NewRoomTypeRequest request);                           // add new type of room
+    RoomTypeResponse addRoomType(NewRoomTypeRequest request);               // add new type of room
 
     void addRoomTypeWithRooms(NewRoomTypeRequest request);                  // add new type of room along with new room
 
-    void addRoomOfExistingType(RoomRequest request);                        // add room of the existing type
+    RoomResponse addRoomOfExistingType(RoomRequest request);                // add room of the existing type
 
     void addMultipleRoomOfExistingType(List<RoomRequest> requests);         // add multiple room of the existing type
 
-    void editRoomType(UpdateRoomTypeRequest request, int typeId);
+    RoomTypeResponse updateRoomType(UpdateRoomTypeRequest request, int typeId);
 
-    void editRoom(RoomRequest request, int roomId);
+    RoomResponse editRoom(RoomRequest request, int roomId);
 
     void deleteRoomType(int typeId);
 

@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import sit.it.rvcomfort.model.entity.RoomType;
 
 import java.io.Serializable;
 
@@ -18,7 +17,7 @@ public class RoomRequest implements Serializable {
     @JsonProperty("room_name")
     private String roomName;
 
-    @JsonProperty("room_type")
-    private RoomType roomType;
+    @JsonProperty("type_id")
+    private Integer typeId;
 
 }
