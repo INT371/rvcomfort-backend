@@ -76,22 +76,22 @@ public class RoomController {
     }
 
     @PatchMapping("/type/{typeId}")
-    public RoomTypeResponse updateRoomType(@RequestBody UpdateRoomTypeRequest request, @PathVariable("typeId") int typeId) {
+    public RoomTypeResponse updateRoomType(@RequestBody UpdateRoomTypeRequest request, @PathVariable("typeId") Integer typeId) {
         return service.updateRoomType(request, typeId);
     }
 
     @PatchMapping("/room/{roomId}")
-    public RoomResponse updateRoom(@RequestBody RoomRequest request, @PathVariable("roomId") int roomId) {
+    public RoomResponse updateRoom(@RequestBody RoomRequest request, @PathVariable("roomId") Integer roomId) {
         return service.updateRoom(request, roomId);
     }
 
     @DeleteMapping("/type/{typeId}")
-    public void deleteRoomType(@PathVariable("typeId") int typeId) {
+    public void deleteRoomType(@PathVariable("typeId") Integer typeId) {
         service.deleteRoomType(typeId);
     }
 
     @DeleteMapping("/room/{roomId}")
-    public void deleteRoom(@PathVariable("roomId") int roomId) {
+    public void deleteRoom(@PathVariable("roomId") Integer roomId) {
         service.deleteRoom(roomId);
     }
 

@@ -15,13 +15,12 @@ public class ExceptionResponse {
         // Room exception 2xxxx
         ROOM_INVALID_ATTROBUTE(20000),
         ROOM_NOT_FOUND(20001),
+        DUPLICATE_ROOM_NAME(20002),
 
         // RoomType exception 3xxxx
         ROOM_TYPE_INVALID_ATTRIBUTE(30000),
-        ROOM_TYPE_NOT_FOUND(30001)
-
-
-        ;
+        ROOM_TYPE_NOT_FOUND(30001),
+        DUPLICATE_ROOM_TYPE(30002);
 
         private int value;
 

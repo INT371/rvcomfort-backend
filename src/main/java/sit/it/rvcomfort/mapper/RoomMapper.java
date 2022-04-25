@@ -18,6 +18,10 @@ public interface RoomMapper {
 
     RoomResponse from(Room room);
 
+    @Mapping(target = "roomId", ignore = true)
+    @Mapping(target = "roomName", source = "request.roomName")
+    @Mapping(target = "roomType", source = "roomType")
+    @Mapping(target = "createdAt", ignore = true)
     Room from(RoomRequest request, RoomType roomType);
 
     @Mapping(target = "roomId", ignore = true)

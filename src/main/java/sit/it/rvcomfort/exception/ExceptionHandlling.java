@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import sit.it.rvcomfort.exception.list.DuplicateDataException;
 import sit.it.rvcomfort.exception.list.NotFoundException;
 import sit.it.rvcomfort.exception.response.ExceptionResponse;
 import sit.it.rvcomfort.util.TimeUtils;
@@ -21,13 +22,11 @@ public class ExceptionHandlling extends ResponseEntityExceptionHandler {
         return handleExceptionInternal(ex, response, new HttpHeaders(), HttpStatus.NOT_FOUND, request);
     }
 
+    @ExceptionHandler(DuplicateDataException.class)
+    public ResponseEntity<Object> exceptionsHandle(DuplicateDataException ex, WebRequest request){
 
-//    @ExceptionHandler(NotFoundException.class)
-//    public ResponseEntity<Object> exceptionsHandle(NotFoundException ex, WebRequest request){
-//
-//        ExceptionResponse response = new ExceptionResponse(ex.getErrorCode(), ex.getMessage(), TimeUtils.now());
-//        ResponseEntity<Object> entity = new ResponseEntity<Object>(response , HttpStatus.NOT_FOUND);
-//
-//        return entity;
-//    }
+        ExceptionResponse response = new ExceptionResponse(ex.getErrorCode(), ex.getMessage(), TimeUtils.now());
+        return handleExceptionInternal(ex, response, new HttpHeaders(), HttpStatus.CONFLICT, request);
+    }
+
 }

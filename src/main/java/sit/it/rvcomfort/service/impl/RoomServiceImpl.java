@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import sit.it.rvcomfort.exception.list.DuplicateDataException;
 import sit.it.rvcomfort.exception.list.NotFoundException;
 import sit.it.rvcomfort.mapper.RoomMapper;
 import sit.it.rvcomfort.mapper.RoomTypeMapper;
@@ -20,15 +21,13 @@ import sit.it.rvcomfort.model.response.SaveRoomTypeResponse;
 import sit.it.rvcomfort.repository.RoomJpaRepository;
 import sit.it.rvcomfort.repository.RoomTypeJpaRepository;
 import sit.it.rvcomfort.service.RoomService;
-import sit.it.rvcomfort.util.TimeUtils;
 
 import javax.transaction.Transactional;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static sit.it.rvcomfort.exception.response.ExceptionResponse.ERROR_CODE.ROOM_NOT_FOUND;
-import static sit.it.rvcomfort.exception.response.ExceptionResponse.ERROR_CODE.ROOM_TYPE_NOT_FOUND;
+import static sit.it.rvcomfort.exception.response.ExceptionResponse.ERROR_CODE.*;
 
 @Transactional
 @Service
@@ -101,8 +100,8 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public RoomTypeResponse addRoomType(RoomTypeRequest request) {
-        // STEP 1: TODO Validation
-
+        // STEP 1: Validation
+        validateIfRoomTypeIsDuplicated(request.getTypeName());
         // STEP 2: Mapped to entity
         RoomType roomType = RoomTypeMapper.INSTANCE.from(request);
         // STEP 3: Save entity
@@ -114,14 +113,14 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public SaveRoomTypeResponse addRoomTypeWithRooms(MultipleRoomTypeRequest request) {
         // STEP 1: Add New RoomType
-        // STEP 1.1: TODO Validation + Validate if rooms are available
-
+        // STEP 1.1: Validation
+        validateIfRoomTypeIsDuplicated(request.getTypeName());
         // STEP 1.2: Mapped to entity
         RoomType roomType = RoomTypeMapper.INSTANCE.from(request);
         // STEP 1.3: Save entity
         RoomType savedRoom = roomTypeRepo.save(roomType);
 
-        // STEP 2: Add new room         // TODO: This need to be change in the future
+        // STEP 2: Add new room
         List<RoomRequest> roomList = request.getRooms().stream()
                 .peek(room -> room.setTypeId(savedRoom.getTypeId()))
                 .collect(Collectors.toList());
@@ -134,9 +133,19 @@ public class RoomServiceImpl implements RoomService {
         return response;
     }
 
+    private void validateIfRoomTypeIsDuplicated(String request) {
+        roomTypeRepo.findByTypeName(request).ifPresent(roomType -> {
+            throw new DuplicateDataException(DUPLICATE_ROOM_TYPE, MessageFormat.format("The specify type name: {0} is already exist in the database.", roomType.getTypeName()));
+        });
+    }
+
     @Override
     public RoomResponse addRoomOfExistingType(RoomRequest request) {
         // STEP 1: Validate
+        roomRepo.findByRoomName(request.getRoomName()).ifPresent(room -> {
+            throw new DuplicateDataException(DUPLICATE_ROOM_TYPE,
+                    MessageFormat.format("The specify room name: {0} is already exist in the database.", room.getRoomName()));
+        });
 
         // STEP 1.2: Get RoomType from Id
         RoomType roomType = roomTypeRepo.findById(request.getTypeId())
@@ -159,14 +168,17 @@ public class RoomServiceImpl implements RoomService {
         return requests.stream()
                 .map(this::addRoomOfExistingType)
                 .collect(Collectors.toList());
-        // TODO: This need to be change in the future
     }
 
     @Override
     public RoomTypeResponse updateRoomType(UpdateRoomTypeRequest request, int typeId) {
         // STEP 1: Validation
         // STEP 1.1:
-
+        roomTypeRepo.findRoomTypeByTypeIdNotAndTypeName(typeId, request.getTypeName())
+                .ifPresent(roomType -> {
+                    throw new DuplicateDataException(DUPLICATE_ROOM_TYPE,
+                            MessageFormat.format("The given type name: {0} is already exist in the database", roomType.getTypeName()));
+                });
         // STEP 1.2: Validate exist room type
         RoomType roomType = roomTypeRepo.findById(typeId)
                 .orElseThrow(() -> new NotFoundException(ROOM_TYPE_NOT_FOUND,
@@ -185,6 +197,12 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public RoomResponse updateRoom(RoomRequest request, int roomId) {
         // STEP 1: Validation
+        roomRepo.findRoomByRoomIdNotAndRoomName(roomId, request.getRoomName())
+                .ifPresent(room -> {
+                    throw new DuplicateDataException(DUPLICATE_ROOM_NAME,
+                            MessageFormat.format("The room with name: {0} is already exist in the database.", room.getRoomName()));
+                });
+
         // STEP 1.1: Retrieve exist room
         Room room = roomRepo.findById(roomId)
                 .orElseThrow(() -> new NotFoundException(ROOM_NOT_FOUND,
@@ -197,7 +215,6 @@ public class RoomServiceImpl implements RoomService {
 
         // STEP 2: Mapped request to entity
         RoomMapper.INSTANCE.update(room, request, roomType);
-        room.setUpdatedAt(TimeUtils.now());
 
         // STEP 3: Save room to database
         Room updatedRoom = roomRepo.save(room);
