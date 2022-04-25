@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import sit.it.rvcomfort.exception.list.NotFoundException;
 import sit.it.rvcomfort.mapper.RoomMapper;
 import sit.it.rvcomfort.mapper.RoomTypeMapper;
 import sit.it.rvcomfort.model.entity.Room;
@@ -19,11 +20,15 @@ import sit.it.rvcomfort.model.response.SaveRoomTypeResponse;
 import sit.it.rvcomfort.repository.RoomJpaRepository;
 import sit.it.rvcomfort.repository.RoomTypeJpaRepository;
 import sit.it.rvcomfort.service.RoomService;
+import sit.it.rvcomfort.util.TimeUtils;
 
 import javax.transaction.Transactional;
-import java.time.ZonedDateTime;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static sit.it.rvcomfort.exception.response.ExceptionResponse.ERROR_CODE.ROOM_NOT_FOUND;
+import static sit.it.rvcomfort.exception.response.ExceptionResponse.ERROR_CODE.ROOM_TYPE_NOT_FOUND;
 
 @Transactional
 @Service
@@ -66,28 +71,32 @@ public class RoomServiceImpl implements RoomService {
     public RoomResponse getRoom(Integer roomId) {
         return roomRepo.findById(roomId)
                 .map(RoomMapper.INSTANCE::from)
-                .orElseThrow(() -> new RuntimeException("")); //TODO: Exception
+                .orElseThrow(() -> new NotFoundException(ROOM_NOT_FOUND,
+                        MessageFormat.format("The room with id: {0} does not exist in the database.", roomId)));
     }
 
     @Override
     public RoomResponse getRoom(String roomName) {
         return roomRepo.findByRoomName(roomName)
                 .map(RoomMapper.INSTANCE::from)
-                .orElseThrow(() -> new RuntimeException("")); //TODO: Exception
+                .orElseThrow(() -> new NotFoundException(ROOM_NOT_FOUND,
+                        MessageFormat.format("The room with name: {0} does not exist in the database.", roomName)));
     }
 
     @Override
     public RoomTypeResponse getRoomType(Integer roomTypeId) {
         return roomTypeRepo.findById(roomTypeId)
                 .map(RoomTypeMapper.INSTANCE::from)
-                .orElseThrow(() -> new RuntimeException("")); //TODO: Exception
+                .orElseThrow(() -> new NotFoundException(ROOM_TYPE_NOT_FOUND,
+                        MessageFormat.format("The room type with id: {0} does not exist in the database.", roomTypeId)));
     }
 
     @Override
     public RoomTypeResponse getRoomType(String roomTypeName) {
         return roomTypeRepo.findByTypeName(roomTypeName)
                 .map(RoomTypeMapper.INSTANCE::from)
-                .orElseThrow(() -> new RuntimeException("")); //TODO: Exception
+                .orElseThrow(() -> new NotFoundException(ROOM_TYPE_NOT_FOUND,
+                        MessageFormat.format("The room type with name: {0} does not exist in the database.", roomTypeName)));
     }
 
     @Override
@@ -131,7 +140,8 @@ public class RoomServiceImpl implements RoomService {
 
         // STEP 1.2: Get RoomType from Id
         RoomType roomType = roomTypeRepo.findById(request.getTypeId())
-                .orElseThrow(() -> new RuntimeException("")); //TODO Exception thrown
+                .orElseThrow(() -> new NotFoundException(ROOM_TYPE_NOT_FOUND,
+                        MessageFormat.format("The room type with id: {0} does not exist in the database.", request.getTypeId())));
 
         // STEP 2: Mapped request to entity
         Room room = RoomMapper.INSTANCE.from(request, roomType);
@@ -159,7 +169,8 @@ public class RoomServiceImpl implements RoomService {
 
         // STEP 1.2: Validate exist room type
         RoomType roomType = roomTypeRepo.findById(typeId)
-                .orElseThrow(() -> new RuntimeException(""));// TODO: Exception thrown
+                .orElseThrow(() -> new NotFoundException(ROOM_TYPE_NOT_FOUND,
+                        MessageFormat.format("The room type with id: {0} does not exist in the database.", typeId)));
 
         // STEP 2: Mapped request to entity
         RoomTypeMapper.INSTANCE.update(roomType, request);
@@ -176,15 +187,17 @@ public class RoomServiceImpl implements RoomService {
         // STEP 1: Validation
         // STEP 1.1: Retrieve exist room
         Room room = roomRepo.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("")); // TODO: Exception thrown
+                .orElseThrow(() -> new NotFoundException(ROOM_NOT_FOUND,
+                        MessageFormat.format("The room with id: {0} does not exist in the database.", roomId)));
 
         // STEP 1.2: Retrieve room type
         RoomType roomType = roomTypeRepo.findById(request.getTypeId())
-                .orElseThrow(() -> new RuntimeException(""));// TODO: Exception thrown
+                .orElseThrow(() -> new NotFoundException(ROOM_TYPE_NOT_FOUND,
+                        MessageFormat.format("The room type with id: {0} does not exist in the database.", request.getTypeId())));
 
         // STEP 2: Mapped request to entity
         RoomMapper.INSTANCE.update(room, request, roomType);
-        room.setUpdatedAt(ZonedDateTime.now());
+        room.setUpdatedAt(TimeUtils.now());
 
         // STEP 3: Save room to database
         Room updatedRoom = roomRepo.save(room);
@@ -197,7 +210,8 @@ public class RoomServiceImpl implements RoomService {
     public void deleteRoomType(int typeId) {
         // STEP 1: Check if delete room type available
         roomTypeRepo.findById(typeId)
-                .orElseThrow(() -> new RuntimeException("")); // TODO: Exception thrown
+                .orElseThrow(() -> new NotFoundException(ROOM_TYPE_NOT_FOUND,
+                        MessageFormat.format("The room type with id: {0} does not exist in the database.", typeId)));
 
         // STEP 2: Check if room type is deletable (TODO: implemented that later. with better approach than cascade delete)
 
@@ -209,7 +223,8 @@ public class RoomServiceImpl implements RoomService {
     public void deleteRoom(int roomId) {
         // STEP 1: Check if delete room available
         roomRepo.findById(roomId)
-                .orElseThrow(() -> new RuntimeException("")); // TODO: Exception thrown
+                .orElseThrow(() -> new NotFoundException(ROOM_NOT_FOUND,
+                        MessageFormat.format("The room with id: {0} does not exist in the database.", roomId)));
 
         // STEP 2: Check if room is deletable (TODO: implemented that later. with better approach than cascade delete)
 

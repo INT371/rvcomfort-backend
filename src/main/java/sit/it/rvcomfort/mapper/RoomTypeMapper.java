@@ -10,8 +10,7 @@ import sit.it.rvcomfort.model.request.room.RoomTypeRequest;
 import sit.it.rvcomfort.model.request.room.UpdateRoomTypeRequest;
 import sit.it.rvcomfort.model.response.RoomTypeResponse;
 import sit.it.rvcomfort.model.response.SaveRoomTypeResponse;
-
-import java.time.ZonedDateTime;
+import sit.it.rvcomfort.util.TimeUtils;
 
 @Mapper
 public interface RoomTypeMapper {
@@ -31,18 +30,18 @@ public interface RoomTypeMapper {
     @AfterMapping
     default void after(@MappingTarget RoomType.RoomTypeBuilder target, RoomTypeRequest request) {
         target.typeId(0);
-        target.createdAt(ZonedDateTime.now());
+        target.createdAt(TimeUtils.now());
     }
 
     @AfterMapping
     default void after(@MappingTarget RoomType.RoomTypeBuilder target, MultipleRoomTypeRequest request) {
         target.typeId(0);
-        target.createdAt(ZonedDateTime.now());
+        target.createdAt(TimeUtils.now());
     }
 
     @AfterMapping
     default void after(@MappingTarget RoomType target, UpdateRoomTypeRequest request) {
-        target.setUpdatedAt(ZonedDateTime.now());
+        target.setUpdatedAt(TimeUtils.now());
     }
 
 }
