@@ -9,8 +9,7 @@ import sit.it.rvcomfort.model.entity.Room;
 import sit.it.rvcomfort.model.entity.RoomType;
 import sit.it.rvcomfort.model.request.room.RoomRequest;
 import sit.it.rvcomfort.model.response.RoomResponse;
-
-import java.time.ZonedDateTime;
+import sit.it.rvcomfort.util.TimeUtils;
 
 @Mapper
 public interface RoomMapper {
@@ -19,6 +18,10 @@ public interface RoomMapper {
 
     RoomResponse from(Room room);
 
+    @Mapping(target = "roomId", ignore = true)
+    @Mapping(target = "roomName", source = "request.roomName")
+    @Mapping(target = "roomType", source = "roomType")
+    @Mapping(target = "createdAt", ignore = true)
     Room from(RoomRequest request, RoomType roomType);
 
     @Mapping(target = "roomId", ignore = true)
@@ -29,12 +32,12 @@ public interface RoomMapper {
     @AfterMapping
     default void after(@MappingTarget Room.RoomBuilder target, RoomRequest request, RoomType roomType) {
         target.roomId(0);
-        target.createdAt(ZonedDateTime.now());
+        target.createdAt(TimeUtils.now());
     }
 
     @AfterMapping
     default void after(@MappingTarget Room target, RoomRequest request, RoomType roomType) {
-        target.setUpdatedAt(ZonedDateTime.now());
+        target.setUpdatedAt(TimeUtils.now());
     }
 
 }

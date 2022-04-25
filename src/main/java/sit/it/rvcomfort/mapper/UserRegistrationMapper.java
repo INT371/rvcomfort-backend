@@ -7,8 +7,7 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 import sit.it.rvcomfort.model.entity.User;
 import sit.it.rvcomfort.model.request.UserRegistrationRequest;
-
-import java.time.ZonedDateTime;
+import sit.it.rvcomfort.util.TimeUtils;
 
 @Mapper
 public interface UserRegistrationMapper {
@@ -32,7 +31,7 @@ public interface UserRegistrationMapper {
     default void after(@MappingTarget User.UserBuilder target, UserRegistrationRequest user, String password) {
         target.id(0);
         target.userType("user");
-        target.createdAt(ZonedDateTime.now());
+        target.createdAt(TimeUtils.now());
         target.isEnabled(Boolean.TRUE);
         target.isNonLocked(Boolean.TRUE);
         target.updatedAt(null);

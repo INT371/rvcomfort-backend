@@ -25,9 +25,9 @@ import sit.it.rvcomfort.model.response.RoomResponse;
 import sit.it.rvcomfort.model.response.RoomTypeResponse;
 import sit.it.rvcomfort.repository.RoomJpaRepository;
 import sit.it.rvcomfort.repository.RoomTypeJpaRepository;
+import sit.it.rvcomfort.util.TimeUtils;
 
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -250,7 +250,7 @@ class RoomServiceImplTest {
                     .maxCapacity(10)
                     .price(BigDecimal.valueOf(3999.99))
                     .policy("Policy")
-                    .createdAt(ZonedDateTime.now())
+                    .createdAt(TimeUtils.now())
                     .build();
 
             when(roomTypeRepo.save(any(RoomType.class)))
@@ -285,7 +285,7 @@ class RoomServiceImplTest {
             Room expectedRoom = Room.builder()
                     .roomId(20)
                     .roomName(request.getRoomName())
-                    .createdAt(ZonedDateTime.now())
+                    .createdAt(TimeUtils.now())
                     .roomType(roomTypeList.get(0))
                     .build();
             when(roomRepo.save(any(Room.class)))
@@ -325,12 +325,12 @@ class RoomServiceImplTest {
             RoomType roomTypeAfter = RoomType.builder()
                     .typeName(request.getTypeName())
                     .typeId(roomTypeBefore.getTypeId())
-                    .createdAt(ZonedDateTime.now().minusDays(2))
+                    .createdAt(TimeUtils.now().minusDays(2))
                     .policy(request.getPolicy())
                     .price(request.getPrice())
                     .maxCapacity(request.getMaxCapacity())
                     .description(request.getDescription())
-                    .updatedAt(ZonedDateTime.now())
+                    .updatedAt(TimeUtils.now())
                     .build();
 
             when(roomTypeRepo.findById(roomTypeBefore.getTypeId()))
@@ -356,8 +356,8 @@ class RoomServiceImplTest {
             Room expectedRoom = Room.builder()
                     .roomId(roomBefore.getRoomId())
                     .roomName(request.getRoomName())
-                    .createdAt(ZonedDateTime.now().minusDays(2))
-                    .updatedAt(ZonedDateTime.now())
+                    .createdAt(TimeUtils.now().minusDays(2))
+                    .updatedAt(TimeUtils.now())
                     .roomType(roomTypeList.get(0))
                     .build();
 
