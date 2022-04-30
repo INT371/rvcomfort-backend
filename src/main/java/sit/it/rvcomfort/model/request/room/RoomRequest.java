@@ -5,16 +5,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import sit.it.rvcomfort.model.BaseRequest;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RoomRequest implements Serializable {
+public class RoomRequest implements BaseRequest {
 
     @NotBlank
     @JsonProperty("room_name")

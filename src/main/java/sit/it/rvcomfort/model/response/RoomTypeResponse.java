@@ -5,15 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import sit.it.rvcomfort.model.BaseResponse;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RoomTypeResponse implements Serializable {
+public class RoomTypeResponse implements BaseResponse {
 
     @JsonProperty("type_id")
     private Integer typeId;

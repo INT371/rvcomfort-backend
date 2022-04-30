@@ -7,12 +7,13 @@ import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
 import sit.it.rvcomfort.model.entity.User;
 import sit.it.rvcomfort.model.request.UserRegistrationRequest;
+import sit.it.rvcomfort.model.response.UserResponse;
 import sit.it.rvcomfort.util.TimeUtils;
 
 @Mapper
-public interface UserRegistrationMapper {
+public interface UserMapper {
 
-    UserRegistrationMapper INSTANCE = Mappers.getMapper(UserRegistrationMapper.class);
+    UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "username", source = "user.username")
@@ -36,5 +37,7 @@ public interface UserRegistrationMapper {
         target.isNonLocked(Boolean.TRUE);
         target.updatedAt(null);
     }
+
+    UserResponse from(User user);
 
 }

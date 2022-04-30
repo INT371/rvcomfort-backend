@@ -11,13 +11,18 @@ import sit.it.rvcomfort.model.BaseResponse;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RoomResponse implements BaseResponse {
+public class UserResponse implements BaseResponse {
 
-    private Integer roomId;
+    private String username;
 
-    @JsonProperty("room_name")
-    private String roomName;
+    private String email;
 
-    @JsonProperty("room_type")
-    private RoomTypeResponse roomType;
+    @JsonProperty("first_name")
+    private String firstName;
+
+    @JsonProperty("last_name")
+    private String lastName;
+
+    @JsonProperty("tel_no")
+    private String telNo;
 }
