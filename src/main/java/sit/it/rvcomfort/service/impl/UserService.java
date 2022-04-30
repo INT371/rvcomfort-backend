@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import sit.it.rvcomfort.exception.list.DuplicateDataException;
 import sit.it.rvcomfort.exception.list.NotFoundException;
 import sit.it.rvcomfort.mapper.UserMapper;
 import sit.it.rvcomfort.model.entity.User;
@@ -15,7 +16,7 @@ import sit.it.rvcomfort.repository.UserJpaRepository;
 
 import java.text.MessageFormat;
 
-import static sit.it.rvcomfort.exception.response.ExceptionResponse.ERROR_CODE.USER_NOT_FOUND;
+import static sit.it.rvcomfort.exception.response.ExceptionResponse.ERROR_CODE.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -59,7 +60,8 @@ public class UserService implements UserDetailsService {
         // STEP 1:  Return user from database but throw exception if user not found
         log.info("[UserService] retrieve user by {}", searchValue);
         return userJpaRepository.findUserByGivenValue(searchValue)
-                .orElseThrow(() -> new RuntimeException("")); // TODO Change exception
+                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND,
+                        MessageFormat.format("user with username {0} not found in database.", searchValue)));
     }
 
     private void userRegistrationValidate(UserRegistrationRequest user) {
@@ -67,19 +69,22 @@ public class UserService implements UserDetailsService {
         User duplicateUser = userJpaRepository.findByUsername(user.getUsername()).orElse(null);
         if (duplicateUser != null) {
             log.error("[UserService] user with username {} is already exists", user.getUsername());
-            throw new RuntimeException("Exception"); // TODO Change exception
+            throw new DuplicateDataException(DUPLICATE_USERNAME,
+                    MessageFormat.format("User with username {0} is already exists", user.getUsername()));
         }
 
         duplicateUser = userJpaRepository.findByEmail(user.getEmail()).orElse(null);
         if (duplicateUser != null) {
             log.error("[UserService] user with email {} is already exists", user.getEmail());
-            throw new RuntimeException("Exception"); // TODO Change exception
+            throw new DuplicateDataException(DUPLICATE_EMAIL,
+                    MessageFormat.format("User with email {0} is already exists", user.getEmail()));
         }
 
         duplicateUser = userJpaRepository.findByFirstNameAndLastName(user.getFirstName(), user.getLastName()).orElse(null);
         if (duplicateUser != null) {
-            log.error("[UserService] user name: {} {} is already exists.", user.getFirstName(), user.getLastName());
-            throw new RuntimeException("Exception"); // TODO Change exception
+            log.error("[UserService] User with name: {} {} is already exists.", user.getFirstName(), user.getLastName());
+            throw new DuplicateDataException(DUPLICATE_FULL_NAME,
+                    MessageFormat.format("User with name {0} {1} is already exists", user.getFirstName(), user.getLastName()));
         }
     }
 }

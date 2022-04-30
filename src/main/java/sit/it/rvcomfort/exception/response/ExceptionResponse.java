@@ -14,6 +14,9 @@ public class ExceptionResponse {
     public static enum ERROR_CODE {
         // User exception 1xxxx
         USER_NOT_FOUND(10001),
+        DUPLICATE_USERNAME(10002),
+        DUPLICATE_EMAIL(10003),
+        DUPLICATE_FULL_NAME(10004),
 
         // Room exception 2xxxx
         ROOM_INVALID_ATTRIBUTE(20000),

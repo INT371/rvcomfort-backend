@@ -13,8 +13,11 @@ import sit.it.rvcomfort.model.response.ReservationResponse;
 import sit.it.rvcomfort.util.TimeUtils;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Duration;
+
+import static java.math.RoundingMode.FLOOR;
+import static sit.it.rvcomfort.util.constant.GeneralConstant.BIG_DECIMAL_SCALE;
+import static sit.it.rvcomfort.util.constant.StatusCode.ReservationStatus.WAIT_FOR_PAYMENT;
 
 @Mapper
 public interface ReservationMapper {
@@ -41,7 +44,7 @@ public interface ReservationMapper {
     @AfterMapping
     default void after(@MappingTarget Reservation.ReservationBuilder target, ReservationRequest request, Room room, User user) {
         target.id(0);
-        target.status("WAIT_FOR_PAYMENT"); //TODO: Create status constant
+        target.status(WAIT_FOR_PAYMENT);
         target.createdAt(TimeUtils.now());
         target.totalPrice(totalPriceCalculate(request, room));
     }
@@ -54,7 +57,7 @@ public interface ReservationMapper {
 
     private BigDecimal totalPriceCalculate(ReservationRequest request, Room room) {
         Long totalDays = Duration.between(request.getCheckInDate(), request.getCheckOutDate()).toDays();
-        return room.getRoomType().getPrice().multiply(BigDecimal.valueOf(totalDays)).setScale(2, RoundingMode.FLOOR); // TODO: Change scale to constant
+        return room.getRoomType().getPrice().multiply(BigDecimal.valueOf(totalDays)).setScale(BIG_DECIMAL_SCALE, FLOOR);
     }
 
 }
