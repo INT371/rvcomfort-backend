@@ -5,8 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import sit.it.rvcomfort.model.BaseResponse;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class SaveRoomTypeResponse implements Serializable {
+public class SaveRoomTypeResponse implements BaseResponse {
 
     @JsonProperty("type_id")
     private Integer typeId;

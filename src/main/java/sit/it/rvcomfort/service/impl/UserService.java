@@ -7,10 +7,15 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import sit.it.rvcomfort.mapper.UserRegistrationMapper;
+import sit.it.rvcomfort.exception.list.NotFoundException;
+import sit.it.rvcomfort.mapper.UserMapper;
 import sit.it.rvcomfort.model.entity.User;
 import sit.it.rvcomfort.model.request.UserRegistrationRequest;
 import sit.it.rvcomfort.repository.UserJpaRepository;
+
+import java.text.MessageFormat;
+
+import static sit.it.rvcomfort.exception.response.ExceptionResponse.ERROR_CODE.USER_NOT_FOUND;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,7 +31,9 @@ public class UserService implements UserDetailsService {
         User user = userJpaRepository.findByUsername(username).orElse(null);
         if (user == null) {
             log.error("[UserService] user {} not found in database.", username);
-            user = userJpaRepository.findByEmail(username).orElseThrow(() -> new RuntimeException("")); //TODO: add message when controller advice finish
+            user = userJpaRepository.findByEmail(username)
+                    .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND,
+                            MessageFormat.format("not have user with username {0} in database.", username)));
         }
         return user;
     }
@@ -41,7 +48,7 @@ public class UserService implements UserDetailsService {
 
         // STEP 3: Map to User Entity
         log.info("[UserService] mapped request of user {} to entity", user.getUsername());
-        User registrationUser = UserRegistrationMapper.INSTANCE.from(user, password);
+        User registrationUser = UserMapper.INSTANCE.from(user, password);
 
         // STEP 4: Save user
         log.info("[UserService] save user {} to database", user.getUsername());

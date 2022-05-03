@@ -1,17 +1,26 @@
 package sit.it.rvcomfort.service;
 
-import org.springframework.data.domain.Page;
-import sit.it.rvcomfort.model.entity.Reservation;
+import sit.it.rvcomfort.model.request.reservation.ReservationRequest;
+import sit.it.rvcomfort.model.response.ReservationResponse;
 
 import java.util.List;
 
 public interface ReservationService {
 
-    List<Reservation> getAllReservations(); // TODO Implement reservation service
+    List<ReservationResponse> getAllReservations();
+    List<ReservationResponse> getPagingReservations(int pageNo, int size, String sortBy);
 
-    Page<Reservation> getPagingReservations();
+    ReservationResponse getReservationById(Integer id);
 
-    Reservation getReservation(Integer id);
+    List<ReservationResponse> getReservationByRoomId(Integer roomId);
+
+    ReservationResponse reserveRoom(ReservationRequest request);
+
+    ReservationResponse cancelRoomReservation(Integer id);
+
+//    ReservationResponse changeRoomReservationDetail(UpdateReservationRequest request);
+
+
 
 
 }
