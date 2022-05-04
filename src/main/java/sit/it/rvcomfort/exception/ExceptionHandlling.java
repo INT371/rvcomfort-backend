@@ -14,6 +14,8 @@ import sit.it.rvcomfort.exception.list.NotFoundException;
 import sit.it.rvcomfort.exception.response.ExceptionResponse;
 import sit.it.rvcomfort.util.TimeUtils;
 
+import static sit.it.rvcomfort.exception.response.ExceptionResponse.ERROR_CODE.INTERNAL_SERVER_ERROR;
+
 @ControllerAdvice
 public class ExceptionHandlling extends ResponseEntityExceptionHandler {
 
@@ -41,6 +43,12 @@ public class ExceptionHandlling extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> exceptionsHandle(BusinessException ex, WebRequest request){
         ExceptionResponse response = new ExceptionResponse(ex.getErrorCode(), ex.getErrorCode().getValue(), ex.getMessage(), TimeUtils.now());
         return handleExceptionInternal(ex, response, new HttpHeaders(), HttpStatus.CONFLICT, request);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> exceptionsHandle(Exception ex, WebRequest request){
+        ExceptionResponse response = new ExceptionResponse(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR.getValue(), ex.getMessage(), TimeUtils.now());
+        return handleExceptionInternal(ex, response, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 
 }

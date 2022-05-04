@@ -21,6 +21,7 @@ import sit.it.rvcomfort.model.response.SaveRoomTypeResponse;
 import sit.it.rvcomfort.repository.RoomJpaRepository;
 import sit.it.rvcomfort.repository.RoomTypeJpaRepository;
 import sit.it.rvcomfort.service.RoomService;
+import sit.it.rvcomfort.service.impl.file.RoomImageService;
 
 import javax.transaction.Transactional;
 import java.text.MessageFormat;
@@ -37,6 +38,7 @@ public class RoomServiceImpl implements RoomService {
 
     private final RoomJpaRepository roomRepo;
     private final RoomTypeJpaRepository roomTypeRepo;
+    private final RoomImageService roomImageService;
 
     @Override
     public List<RoomTypeResponse> getAllRoomType() {

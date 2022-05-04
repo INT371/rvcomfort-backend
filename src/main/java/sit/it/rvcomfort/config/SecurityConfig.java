@@ -2,6 +2,7 @@ package sit.it.rvcomfort.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -28,8 +29,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserService userService;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-    private String secret = "secret"; // TODO: Field injection secret
-    private String host = "http://localhost:8083"; // TODO: Field injection host
+    @Value("${rvcomfort.jwt.secret}")
+    private String secret;
+    @Value("${rvcomfort.host.front-end}")
+    private String host;
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {

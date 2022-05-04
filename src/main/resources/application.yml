@@ -1,2 +1,23 @@
 server:
   port: 8083
+
+spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 60MB
+  jackson:
+    time-zone: GMT+7
+
+## Custom Properties ##
+rvcomfort:
+  path:
+    base: src/main/resources
+    file: ${rvcomfort.path.base}/file
+    image:
+      room: ${rvcomfort.path.file}/image/room
+      user: ${rvcomfort.path.file}/image/user
+  host:
+    front-end: ${FRONT_END_HOST}
+  jwt:
+    secret: ${JWT_SECRET}

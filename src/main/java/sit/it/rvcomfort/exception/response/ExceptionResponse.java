@@ -12,6 +12,9 @@ public class ExceptionResponse {
 
     @Getter
     public static enum ERROR_CODE {
+        // General exception 0xxxx
+        INTERNAL_SERVER_ERROR(00000),
+
         // User exception 1xxxx
         USER_NOT_FOUND(10001),
         DUPLICATE_USERNAME(10002),
