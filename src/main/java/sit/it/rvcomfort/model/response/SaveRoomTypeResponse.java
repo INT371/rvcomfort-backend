@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import sit.it.rvcomfort.model.BaseResponse;
+import sit.it.rvcomfort.model.response.RoomTypeResponse.RoomTypeImageResponse;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,6 +31,8 @@ public class SaveRoomTypeResponse implements BaseResponse {
     private Integer maxCapacity;
 
     private String policy;
+
+    private List<RoomTypeImageResponse> images;
 
     private List<RoomResponse> rooms;
 

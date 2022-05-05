@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import sit.it.rvcomfort.model.BaseResponse;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @Builder
@@ -30,4 +31,16 @@ public class RoomTypeResponse implements BaseResponse {
 
     private String policy;
 
+    private List<RoomTypeImageResponse> images;
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Builder
+    public static class RoomTypeImageResponse {
+
+        private Integer id;
+        private String image;
+
+    }
 }

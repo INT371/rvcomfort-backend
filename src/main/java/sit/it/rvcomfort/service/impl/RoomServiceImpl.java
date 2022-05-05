@@ -1,16 +1,22 @@
 package sit.it.rvcomfort.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.SerializationUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import sit.it.rvcomfort.exception.list.DuplicateDataException;
 import sit.it.rvcomfort.exception.list.NotFoundException;
 import sit.it.rvcomfort.mapper.RoomMapper;
+import sit.it.rvcomfort.mapper.RoomTypeImageMapper;
 import sit.it.rvcomfort.mapper.RoomTypeMapper;
 import sit.it.rvcomfort.model.entity.Room;
 import sit.it.rvcomfort.model.entity.RoomType;
+import sit.it.rvcomfort.model.entity.RoomTypeImage;
 import sit.it.rvcomfort.model.request.room.MultipleRoomTypeRequest;
 import sit.it.rvcomfort.model.request.room.RoomRequest;
 import sit.it.rvcomfort.model.request.room.RoomTypeRequest;
@@ -19,12 +25,14 @@ import sit.it.rvcomfort.model.response.RoomResponse;
 import sit.it.rvcomfort.model.response.RoomTypeResponse;
 import sit.it.rvcomfort.model.response.SaveRoomTypeResponse;
 import sit.it.rvcomfort.repository.RoomJpaRepository;
+import sit.it.rvcomfort.repository.RoomTypeImageJpaRepository;
 import sit.it.rvcomfort.repository.RoomTypeJpaRepository;
 import sit.it.rvcomfort.service.RoomService;
 import sit.it.rvcomfort.service.impl.file.RoomImageService;
 
 import javax.transaction.Transactional;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,9 +44,12 @@ import static sit.it.rvcomfort.exception.response.ExceptionResponse.ERROR_CODE.*
 @RequiredArgsConstructor
 public class RoomServiceImpl implements RoomService {
 
+    private final ObjectMapper objectMapper;
+
+    private final RoomImageService roomImageService;
     private final RoomJpaRepository roomRepo;
     private final RoomTypeJpaRepository roomTypeRepo;
-    private final RoomImageService roomImageService;
+    private final RoomTypeImageJpaRepository roomTypeImageRepo;
 
     @Override
     public List<RoomTypeResponse> getAllRoomType() {
@@ -100,36 +111,43 @@ public class RoomServiceImpl implements RoomService {
                         MessageFormat.format("The room type with name: {0} does not exist in the database.", roomTypeName)));
     }
 
+    @SneakyThrows
     @Override
-    public RoomTypeResponse addRoomType(RoomTypeRequest request) {
+    public RoomTypeResponse addRoomType(RoomTypeRequest request, MultipartFile[] images) {
         // STEP 1: Validation
+        log.info("[addRoomType] STEP 1: Validation");
         validateIfRoomTypeIsDuplicated(request.getTypeName());
+        validateIsImageEmpty(images);
         // STEP 2: Mapped to entity
         RoomType roomType = RoomTypeMapper.INSTANCE.from(request);
-        // STEP 3: Save entity
+        log.info("[addRoomType] STEP 2: mapped to entity '{}'", objectMapper.writeValueAsString(roomType));
+        // STEP 3: Save image -> mapped to RoomTypeImage entity -> save to database
+        List<RoomTypeImage> imageList = storeImages(images, roomType);
+        log.info("[addRoomType] STEP 3.1: mapped to RoomTypeImage entity '{}'", objectMapper.writeValueAsString(imageList));
+        roomType.setImages(imageList);
+        log.info("[addRoomType] STEP 3.2: set image to roomType '{}'", objectMapper.writeValueAsString(roomType));
+        // STEP 4: Save to database
         RoomType savedRoom = roomTypeRepo.save(roomType);
-        // STEP 4: Mapped to response then return
+        log.info("[addRoomType] STEP 4: Save to database '{}'", objectMapper.writeValueAsString(savedRoom));
+        // STEP 5: Mapped to response then return
         return RoomTypeMapper.INSTANCE.from(savedRoom);
     }
 
     @Override
-    public SaveRoomTypeResponse addRoomTypeWithRooms(MultipleRoomTypeRequest request) {
-        // STEP 1: Add New RoomType
-        // STEP 1.1: Validation
-        validateIfRoomTypeIsDuplicated(request.getTypeName());
-        // STEP 1.2: Mapped to entity
-        RoomType roomType = RoomTypeMapper.INSTANCE.from(request);
-        // STEP 1.3: Save entity
-        RoomType savedRoom = roomTypeRepo.save(roomType);
+    public SaveRoomTypeResponse addRoomTypeWithRooms(MultipleRoomTypeRequest request, MultipartFile[] images) {
+        // STEP 1.1: Mapped request to normal roomType request
+        RoomTypeRequest roomTypeRequest = RoomTypeMapper.INSTANCE.derivedFrom(request);
+        // STEP 1.2: Send to add room type method
+        RoomTypeResponse addRoomTypeResponse = addRoomType(roomTypeRequest, images);
 
         // STEP 2: Add new room
         List<RoomRequest> roomList = request.getRooms().stream()
-                .peek(room -> room.setTypeId(savedRoom.getTypeId()))
+                .peek(room -> room.setTypeId(addRoomTypeResponse.getTypeId()))
                 .collect(Collectors.toList());
         List<RoomResponse> roomResponses = this.addMultipleRoomOfExistingType(roomList);
 
         // STEP 3: Mapped and return
-        SaveRoomTypeResponse response = RoomTypeMapper.INSTANCE.addFrom(savedRoom);
+        SaveRoomTypeResponse response = RoomTypeMapper.INSTANCE.addFrom(addRoomTypeResponse);
         response.setRooms(roomResponses);
 
         return response;
@@ -173,7 +191,7 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public RoomTypeResponse updateRoomType(UpdateRoomTypeRequest request, int typeId) {
+    public RoomTypeResponse updateRoomType(UpdateRoomTypeRequest request, MultipartFile[] images, int typeId) {
         // STEP 1: Validation
         // STEP 1.1:
         roomTypeRepo.findRoomTypeByTypeIdNotAndTypeName(typeId, request.getTypeName())
@@ -181,19 +199,48 @@ public class RoomServiceImpl implements RoomService {
                     throw new DuplicateDataException(DUPLICATE_ROOM_TYPE,
                             MessageFormat.format("The given type name: {0} is already exist in the database", roomType.getTypeName()));
                 });
+
         // STEP 1.2: Validate exist room type
         RoomType roomType = roomTypeRepo.findById(typeId)
                 .orElseThrow(() -> new NotFoundException(ROOM_TYPE_NOT_FOUND,
                         MessageFormat.format("The room type with id: {0} does not exist in the database.", typeId)));
 
+        // STEP 1.3: Validate image list must not empty
+        validateIsImageEmpty(images);
+
         // STEP 2: Mapped request to entity
         RoomTypeMapper.INSTANCE.update(roomType, request);
+        List<RoomTypeImage> oldImages = SerializationUtils.clone(roomType).getImages();
 
-        // STEP 3: Save room type to database
+        // STEP 3: Save image -> set RoomTypeImage entity -> remove current image in database
+        List<RoomTypeImage> imageList = storeImages(images, roomType);
+        roomType.setImages(imageList);
+        roomTypeImageRepo.deleteByTypeTypeId(typeId);
+
+        // STEP 4: Save room type to database
         RoomType updatedRoomType = roomTypeRepo.save(roomType);
 
-        // STEP 4: Return response
+        // STEP 5: Remove old image
+        oldImages.stream()
+                .map(RoomTypeImage::getImage)
+                .peek(roomImageService::deleteOne);
+
+        // STEP 6: Return response
         return RoomTypeMapper.INSTANCE.from(updatedRoomType);
+    }
+
+    private List<RoomTypeImage> storeImages(MultipartFile[] images, RoomType roomType) {
+        List<RoomTypeImage> imageList = Arrays.stream(images)
+                .map(image -> roomImageService.save(image))
+                .map(image -> RoomTypeImageMapper.INSTANCE.from(roomType, image))
+                .collect(Collectors.toList());
+        return imageList;
+    }
+
+    private void validateIsImageEmpty(MultipartFile[] images) {
+        if (images.length <= 0) {
+            throw new RuntimeException("Images array is empty"); //TODO: Change exception
+        }
     }
 
     @Override

@@ -16,6 +16,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.multipart.MultipartFile;
 import sit.it.rvcomfort.model.entity.Room;
 import sit.it.rvcomfort.model.entity.RoomType;
 import sit.it.rvcomfort.model.request.room.RoomRequest;
@@ -40,14 +41,16 @@ import static org.mockito.Mockito.*;
 @ExtendWith(SpringExtension.class)
 class RoomServiceImplTest {
 
+    @InjectMocks
+    private RoomServiceImpl service;
+    @Mock
+    private RoomJpaRepository roomRepo;
+    @Mock
+    private RoomTypeJpaRepository roomTypeRepo;
+
     private static List<RoomType> roomTypeList;
     private static List<Room> roomList;
-    @InjectMocks
-    RoomServiceImpl service;
-    @Mock
-    RoomJpaRepository roomRepo;
-    @Mock
-    RoomTypeJpaRepository roomTypeRepo;
+    private static MultipartFile[] files;
 
     @BeforeAll
     static void setUp() {
@@ -64,6 +67,8 @@ class RoomServiceImplTest {
                     room.setRoomType(roomTypeList.get(random));
                 })
                 .collect(Collectors.toList());
+
+        files = generator.objects(MultipartFile.class, 5).toArray(MultipartFile[]::new);
     }
 
     @Test
@@ -257,7 +262,7 @@ class RoomServiceImplTest {
                     .thenReturn(expectRoomType);
 
             // when
-            RoomTypeResponse actualRoomType = service.addRoomType(roomTypeRequest);
+            RoomTypeResponse actualRoomType = service.addRoomType(roomTypeRequest, files);
 
             // then
             assertThat(actualRoomType).usingRecursiveComparison().isEqualTo(expectRoomType);
@@ -339,7 +344,7 @@ class RoomServiceImplTest {
                     .thenReturn(roomTypeAfter);
 
             // when
-            RoomTypeResponse actualResponse = service.updateRoomType(request, roomTypeBefore.getTypeId());
+            RoomTypeResponse actualResponse = service.updateRoomType(request, files, roomTypeBefore.getTypeId());
 
             // then
             assertThat(actualResponse).usingRecursiveComparison().isEqualTo(roomTypeAfter);
@@ -376,7 +381,6 @@ class RoomServiceImplTest {
         }
 
     }
-   
 
     @Test
     @Disabled

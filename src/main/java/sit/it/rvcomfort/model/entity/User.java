@@ -49,6 +49,9 @@ public class User implements Serializable, UserDetails {
     @Column(name = "tel_no")
     private String telNo;
 
+    @Column(name = "image")
+    private String image;
+
     @Column(name = "user_type")
     private String userType;
 

@@ -1,5 +1,6 @@
 package sit.it.rvcomfort.service;
 
+import org.springframework.web.multipart.MultipartFile;
 import sit.it.rvcomfort.model.request.room.MultipleRoomTypeRequest;
 import sit.it.rvcomfort.model.request.room.RoomRequest;
 import sit.it.rvcomfort.model.request.room.RoomTypeRequest;
@@ -28,15 +29,15 @@ public interface RoomService {
 
     RoomTypeResponse getRoomType(String roomTypeName);                      // return room type of given name
 
-    RoomTypeResponse addRoomType(RoomTypeRequest request);               // add new type of room
+    RoomTypeResponse addRoomType(RoomTypeRequest request, MultipartFile[] images);               // add new type of room
 
-    SaveRoomTypeResponse addRoomTypeWithRooms(MultipleRoomTypeRequest request);                  // add new type of room along with new room
+    SaveRoomTypeResponse addRoomTypeWithRooms(MultipleRoomTypeRequest request, MultipartFile[] images);                  // add new type of room along with new room
 
     RoomResponse addRoomOfExistingType(RoomRequest request);                // add room of the existing type
 
     List<RoomResponse> addMultipleRoomOfExistingType(List<RoomRequest> requests);         // add multiple room of the existing type
 
-    RoomTypeResponse updateRoomType(UpdateRoomTypeRequest request, int typeId);
+    RoomTypeResponse updateRoomType(UpdateRoomTypeRequest request, MultipartFile[] images, int typeId);
 
     RoomResponse updateRoom(RoomRequest request, int roomId);
 
