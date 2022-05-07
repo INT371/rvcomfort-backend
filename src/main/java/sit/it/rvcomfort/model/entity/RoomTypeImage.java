@@ -1,10 +1,7 @@
 package sit.it.rvcomfort.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -23,9 +20,10 @@ public class RoomTypeImage implements Serializable {
     @Column(name = "id")
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "type_id")
     @JsonBackReference
+    @EqualsAndHashCode.Exclude
     private RoomType type;
 
     @Column(name = "image")

@@ -155,7 +155,8 @@ public class RoomServiceImpl implements RoomService {
 
     private void validateIfRoomTypeIsDuplicated(String request) {
         roomTypeRepo.findByTypeName(request).ifPresent(roomType -> {
-            throw new DuplicateDataException(DUPLICATE_ROOM_TYPE, MessageFormat.format("The specify type name: {0} is already exist in the database.", roomType.getTypeName()));
+            throw new DuplicateDataException(DUPLICATE_ROOM_TYPE,
+                    MessageFormat.format("The specify type name: {0} is already exist in the database.", roomType.getTypeName()));
         });
     }
 
@@ -163,7 +164,7 @@ public class RoomServiceImpl implements RoomService {
     public RoomResponse addRoomOfExistingType(RoomRequest request) {
         // STEP 1: Validate
         roomRepo.findByRoomName(request.getRoomName()).ifPresent(room -> {
-            throw new DuplicateDataException(DUPLICATE_ROOM_TYPE,
+            throw new DuplicateDataException(DUPLICATE_ROOM_NAME,
                     MessageFormat.format("The specify room name: {0} is already exist in the database.", room.getRoomName()));
         });
 
@@ -190,10 +191,12 @@ public class RoomServiceImpl implements RoomService {
                 .collect(Collectors.toList());
     }
 
+    @SneakyThrows
     @Override
     public RoomTypeResponse updateRoomType(UpdateRoomTypeRequest request, MultipartFile[] images, int typeId) {
         // STEP 1: Validation
         // STEP 1.1:
+        log.info("[updateRoomType] STEP 1: Validation Started");
         roomTypeRepo.findRoomTypeByTypeIdNotAndTypeName(typeId, request.getTypeName())
                 .ifPresent(roomType -> {
                     throw new DuplicateDataException(DUPLICATE_ROOM_TYPE,
@@ -207,23 +210,33 @@ public class RoomServiceImpl implements RoomService {
 
         // STEP 1.3: Validate image list must not empty
         validateIsImageEmpty(images);
+        log.info("[updateRoomType] STEP 1: Validation End");
 
         // STEP 2: Mapped request to entity
         RoomTypeMapper.INSTANCE.update(roomType, request);
+        log.info("[updateRoomType] STEP 2.1: Mapped request: {}", objectMapper.writeValueAsString(roomType));
         List<RoomTypeImage> oldImages = SerializationUtils.clone(roomType).getImages();
+        log.info("[updateRoomType] STEP 2.2: Get old image: {}", objectMapper.writeValueAsString(oldImages));
 
         // STEP 3: Save image -> set RoomTypeImage entity -> remove current image in database
         List<RoomTypeImage> imageList = storeImages(images, roomType);
+        log.info("[updateRoomType] STEP 3.1: Save image: {}", objectMapper.writeValueAsString(imageList));
         roomType.setImages(imageList);
+        log.info("[updateRoomType] STEP 3.2: Set room type image: {}", objectMapper.writeValueAsString(roomType));
         roomTypeImageRepo.deleteByTypeTypeId(typeId);
+        log.info("[updateRoomType] STEP 3.3: Delete old foreign key");
 
         // STEP 4: Save room type to database
         RoomType updatedRoomType = roomTypeRepo.save(roomType);
+        log.info("[updateRoomType] STEP 4: Save room to database: {}", objectMapper.writeValueAsString(updatedRoomType));
 
         // STEP 5: Remove old image
+        log.info("[updateRoomType] STEP 5: Remove old image Started");
         oldImages.stream()
                 .map(RoomTypeImage::getImage)
-                .peek(roomImageService::deleteOne);
+                .forEach(s -> {
+                    roomImageService.deleteOne(s);
+                });
 
         // STEP 6: Return response
         return RoomTypeMapper.INSTANCE.from(updatedRoomType);
@@ -239,7 +252,7 @@ public class RoomServiceImpl implements RoomService {
 
     private void validateIsImageEmpty(MultipartFile[] images) {
         if (images.length <= 0) {
-            throw new RuntimeException("Images array is empty"); //TODO: Change exception
+            throw new NotFoundException(EMPTY_LIST, "Image array is empty");
         }
     }
 

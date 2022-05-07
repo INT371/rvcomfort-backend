@@ -36,7 +36,7 @@ public class RoomType implements Serializable {
 
     private String policy;
 
-    @OneToMany(mappedBy = "type", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "type", fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     private List<RoomTypeImage> images;
 
     @Column(name = "created_at")
