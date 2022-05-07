@@ -17,3 +17,10 @@ spring:
     url: jdbc:mysql://localhost:3306/rvcomfort?serverTimezone=Asia/Bangkok&useUnicode=yes&characterEncoding=UTF-8&createDatabaseIfNotExist=true
     user: rvdev
     password: mysql
+
+## Custom Properties ##
+rvcomfort:
+  jwt:
+    secret: HELLO_HELLO_HELLO_HELLO_BANANA
+  host:
+    front-end: http://localhost:8080

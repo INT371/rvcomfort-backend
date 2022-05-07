@@ -1,8 +1,10 @@
 package sit.it.rvcomfort.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import sit.it.rvcomfort.model.request.room.MultipleRoomTypeRequest;
 import sit.it.rvcomfort.model.request.room.RoomRequest;
 import sit.it.rvcomfort.model.request.room.RoomTypeRequest;
@@ -55,14 +57,18 @@ public class RoomController {
         return service.getRoomType(typeName);
     }
 
-    @PostMapping("/type")
-    public RoomTypeResponse saveNewRoomType(@Validated @RequestBody RoomTypeRequest request) {
-        return service.addRoomType(request);
+    @PostMapping(value = "/type", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public RoomTypeResponse saveNewRoomType(
+            @RequestParam("images") MultipartFile[] images,
+            @Validated @RequestPart RoomTypeRequest request) {
+        return service.addRoomType(request, images);
     }
 
-    @PostMapping("/type/rooms")
-    public SaveRoomTypeResponse saveNewRoomTypeWithRooms(@Validated @RequestBody MultipleRoomTypeRequest request) {
-        return service.addRoomTypeWithRooms(request);
+    @PostMapping(value = "/type/rooms", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public SaveRoomTypeResponse saveNewRoomTypeWithRooms(
+            @RequestParam("images") MultipartFile[] images,
+            @Validated @RequestPart MultipleRoomTypeRequest request) {
+        return service.addRoomTypeWithRooms(request, images);
     }
 
     @PostMapping("/room")
@@ -75,9 +81,12 @@ public class RoomController {
         return service.addMultipleRoomOfExistingType(request);
     }
 
-    @PatchMapping("/type/{typeId}")
-    public RoomTypeResponse updateRoomType(@RequestBody UpdateRoomTypeRequest request, @PathVariable("typeId") Integer typeId) {
-        return service.updateRoomType(request, typeId);
+    @PatchMapping(value = "/type/{typeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public RoomTypeResponse updateRoomType(
+            @RequestParam("images") MultipartFile[] images,
+            @RequestPart UpdateRoomTypeRequest request,
+            @PathVariable("typeId") Integer typeId) {
+        return service.updateRoomType(request, images, typeId);
     }
 
     @PatchMapping("/room/{roomId}")

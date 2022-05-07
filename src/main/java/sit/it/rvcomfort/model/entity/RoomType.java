@@ -9,6 +9,7 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -34,6 +35,9 @@ public class RoomType implements Serializable {
     private Integer maxCapacity;
 
     private String policy;
+
+    @OneToMany(mappedBy = "type", fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
+    private List<RoomTypeImage> images;
 
     @Column(name = "created_at")
     private ZonedDateTime createdAt;

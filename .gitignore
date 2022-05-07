@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+### RVComfort ###
+**/resources/file
+
 ### STS ###
 .apt_generated
 .classpath
