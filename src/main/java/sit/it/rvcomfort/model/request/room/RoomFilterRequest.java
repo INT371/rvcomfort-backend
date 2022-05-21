@@ -7,6 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import sit.it.rvcomfort.model.BaseRequest;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -18,16 +19,15 @@ import java.time.ZonedDateTime;
 public class RoomFilterRequest implements BaseRequest {
 
     @JsonProperty("min_price")
+    @Min(0)
     private BigDecimal minPrice;
 
     @JsonProperty("max_price")
+    @Min(0)
     private BigDecimal maxPrice;
 
-    @JsonProperty("min_capacity")
-    private Integer minCapacity;
-
-    @JsonProperty("max_capacity")
-    private Integer maxCapacity;
+    @JsonProperty("num_of_person")
+    private Integer numOfPerson;
 
     @JsonProperty("check_in_date")
     @NotNull

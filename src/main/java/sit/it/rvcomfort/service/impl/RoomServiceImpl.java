@@ -15,6 +15,7 @@ import sit.it.rvcomfort.exception.list.NotFoundException;
 import sit.it.rvcomfort.mapper.RoomMapper;
 import sit.it.rvcomfort.mapper.RoomTypeImageMapper;
 import sit.it.rvcomfort.mapper.RoomTypeMapper;
+import sit.it.rvcomfort.model.dto.RoomTypeCountQuery;
 import sit.it.rvcomfort.model.entity.Room;
 import sit.it.rvcomfort.model.entity.RoomType;
 import sit.it.rvcomfort.model.entity.RoomTypeImage;
@@ -335,6 +336,7 @@ public class RoomServiceImpl implements RoomService {
 
     }
 
+    @SneakyThrows
     @Override
     public List<RoomTypeResponse> filterRoomWith(RoomFilterRequest request) {
         // STEP 1: Validation -> Check if date eligible
@@ -342,18 +344,44 @@ public class RoomServiceImpl implements RoomService {
 
         // STEP 2: Retrieve room type by checkin - checkout date
         /*
-        * Retrieve reservation that was time overlapped
-        * **COUNT** retrieve data and compare to room count for each type
-        * if reservation count not equals to room count then return that room type
-        */
-        Map<Integer, Long> roomTypeCountMap = roomTypeRepo.countTotalRoomByRoomTypeInterface();
-        Map<Integer, Long> rooms = reservationRepo.countReservedRoom(request.getCheckInDate(), request.getCheckOutDate());
+         * Retrieve reservation that was time overlapped
+         * **COUNT** retrieve data and compare to room count for each type
+         * if reservation count not equals to room count then return that room type
+         */
+        List<RoomType> roomTypeList = roomTypeRepo.findAll();
+        List<RoomTypeCountQuery> roomTypeCountQueryList = roomTypeRepo.countTotalRoomByRoomTypeInterface();
+        Map<Integer, Long> roomTypeCountMap = roomTypeCountQueryList.stream()
+                .collect(Collectors.toMap(RoomTypeCountQuery::getTypeId, RoomTypeCountQuery::getRoomCount));
+        List<RoomTypeCountQuery> reservedRoomQueryList = reservationRepo.countReservedRoom(request.getCheckInDate(), request.getCheckOutDate());
+        Map<Integer, Long> reservedRoomMap = reservedRoomQueryList.stream()
+                .collect(Collectors.toMap(RoomTypeCountQuery::getTypeId, RoomTypeCountQuery::getRoomCount));
 
+        // STEP 3: Filtering data
 
-        // STEP 3: Filtering by condition
+        roomTypeList = roomTypeList.stream().filter(roomType ->
+                        !roomTypeCountMap.get(roomType.getTypeId()).equals(reservedRoomMap.get(roomType.getTypeId()))
+                )
+                .filter(roomType -> {
+                    boolean check = true;
+                    if(request.getMinPrice() != null && roomType.getPrice().compareTo(request.getMinPrice()) < 0 ) {
+                        return false;
+                    }
+                    if(request.getMaxPrice() != null && roomType.getPrice().compareTo(request.getMaxPrice()) > 0 ) {
+                        return false;
+                    }
+                    if(request.getNumOfPerson() != null && Integer.compare(roomType.getMaxCapacity(), request.getNumOfPerson()) < 0 ) {
+                        return false;
+                    }
+                    return check;
+                })
+                .collect(Collectors.toList());
 
+        // STEP 4: Mapped to response
+        List<RoomTypeResponse> responses = roomTypeList.stream()
+                .map(RoomTypeMapper.INSTANCE::from)
+                .collect(Collectors.toList());
 
-        return null;
+        return responses;
     }
 
     private void validateDateEligibility(RoomFilterRequest request) {

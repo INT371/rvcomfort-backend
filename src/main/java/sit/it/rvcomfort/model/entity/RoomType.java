@@ -1,9 +1,6 @@
 package sit.it.rvcomfort.model.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -36,6 +33,7 @@ public class RoomType implements Serializable {
 
     private String policy;
 
+    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "type", fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     private List<RoomTypeImage> images;
 
