@@ -5,7 +5,7 @@ target/
 !**/src/test/**/target/
 
 ### RVComfort ###
-#**/resources/file
+**/resources/file
 
 ### STS ###
 .apt_generated
