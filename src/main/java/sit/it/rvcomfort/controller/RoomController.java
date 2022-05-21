@@ -11,6 +11,7 @@ import sit.it.rvcomfort.model.request.room.RoomTypeRequest;
 import sit.it.rvcomfort.model.request.room.UpdateRoomTypeRequest;
 import sit.it.rvcomfort.model.response.RoomResponse;
 import sit.it.rvcomfort.model.response.RoomTypeResponse;
+import sit.it.rvcomfort.model.response.RoomTypeWithRoomResponse;
 import sit.it.rvcomfort.model.response.SaveRoomTypeResponse;
 import sit.it.rvcomfort.service.RoomService;
 
@@ -55,6 +56,11 @@ public class RoomController {
     @GetMapping("/type/name/{typeName}")
     public RoomTypeResponse retrieveRoomTypeByName(@PathVariable("typeName") String typeName) {
         return service.getRoomType(typeName);
+    }
+
+    @GetMapping("/type/room/{typeId}")
+    public RoomTypeWithRoomResponse retrieveRoomTypeWithRooms(@PathVariable("typeId") Integer typeId) {
+        return service.getRoomTypeWithRoom(typeId);
     }
 
     @PostMapping(value = "/type", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})

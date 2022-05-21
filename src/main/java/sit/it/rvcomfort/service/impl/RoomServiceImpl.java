@@ -10,6 +10,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import sit.it.rvcomfort.exception.list.DuplicateDataException;
+import sit.it.rvcomfort.exception.list.InvalidAttributeException;
 import sit.it.rvcomfort.exception.list.NotFoundException;
 import sit.it.rvcomfort.mapper.RoomMapper;
 import sit.it.rvcomfort.mapper.RoomTypeImageMapper;
@@ -17,13 +18,12 @@ import sit.it.rvcomfort.mapper.RoomTypeMapper;
 import sit.it.rvcomfort.model.entity.Room;
 import sit.it.rvcomfort.model.entity.RoomType;
 import sit.it.rvcomfort.model.entity.RoomTypeImage;
-import sit.it.rvcomfort.model.request.room.MultipleRoomTypeRequest;
-import sit.it.rvcomfort.model.request.room.RoomRequest;
-import sit.it.rvcomfort.model.request.room.RoomTypeRequest;
-import sit.it.rvcomfort.model.request.room.UpdateRoomTypeRequest;
+import sit.it.rvcomfort.model.request.room.*;
 import sit.it.rvcomfort.model.response.RoomResponse;
 import sit.it.rvcomfort.model.response.RoomTypeResponse;
+import sit.it.rvcomfort.model.response.RoomTypeWithRoomResponse;
 import sit.it.rvcomfort.model.response.SaveRoomTypeResponse;
+import sit.it.rvcomfort.repository.ReservationJpaRepository;
 import sit.it.rvcomfort.repository.RoomJpaRepository;
 import sit.it.rvcomfort.repository.RoomTypeImageJpaRepository;
 import sit.it.rvcomfort.repository.RoomTypeJpaRepository;
@@ -32,8 +32,12 @@ import sit.it.rvcomfort.service.impl.file.RoomImageService;
 
 import javax.transaction.Transactional;
 import java.text.MessageFormat;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static sit.it.rvcomfort.exception.response.ExceptionResponse.ERROR_CODE.*;
@@ -50,6 +54,7 @@ public class RoomServiceImpl implements RoomService {
     private final RoomJpaRepository roomRepo;
     private final RoomTypeJpaRepository roomTypeRepo;
     private final RoomTypeImageJpaRepository roomTypeImageRepo;
+    private final ReservationJpaRepository reservationRepo;
 
     @Override
     public List<RoomTypeResponse> getAllRoomType() {
@@ -286,6 +291,23 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    public RoomTypeWithRoomResponse getRoomTypeWithRoom(Integer typeId) {
+        // STEP 1: Validation + Retrieve room type from database
+        RoomType roomType = roomTypeRepo.findById(typeId)
+                .orElseThrow(() -> new NotFoundException(ROOM_TYPE_NOT_FOUND,
+                        MessageFormat.format("The room type with id: {0} does not exist in the database.", typeId)));
+
+        // STEP 2: Retrieve rooms this type from database
+        List<Room> roomList = roomRepo.findRoomByRoomType(roomType);
+
+        // STEP 3: Mapped entities to response
+        RoomTypeWithRoomResponse response = RoomTypeMapper.INSTANCE.from(roomType, roomList);
+
+        // STEP 4: Return response
+        return response;
+    }
+
+    @Override
     public void deleteRoomType(int typeId) {
         // STEP 1: Check if delete room type available
         roomTypeRepo.findById(typeId)
@@ -307,8 +329,44 @@ public class RoomServiceImpl implements RoomService {
 
         // STEP 2: Check if room is deletable (TODO: implemented that later. with better approach than cascade delete)
 
+
         // STEP 3: Delete the room
         roomRepo.deleteById(roomId);
 
+    }
+
+    @Override
+    public List<RoomTypeResponse> filterRoomWith(RoomFilterRequest request) {
+        // STEP 1: Validation -> Check if date eligible
+        validateDateEligibility(request);
+
+        // STEP 2: Retrieve room type by checkin - checkout date
+        /*
+        * Retrieve reservation that was time overlapped
+        * **COUNT** retrieve data and compare to room count for each type
+        * if reservation count not equals to room count then return that room type
+        */
+        Map<Integer, Long> roomTypeCountMap = roomTypeRepo.countTotalRoomByRoomTypeInterface();
+        Map<Integer, Long> rooms = reservationRepo.countReservedRoom(request.getCheckInDate(), request.getCheckOutDate());
+
+
+        // STEP 3: Filtering by condition
+
+
+        return null;
+    }
+
+    private void validateDateEligibility(RoomFilterRequest request) {
+        if (request.getCheckInDate().isAfter(request.getCheckOutDate())) {
+            throw new InvalidAttributeException(RESERVATION_INVALID_ATTRIBUTE, "Check in date must not after check out date");
+        }
+
+        int minDayInterval = 1; //TODO: Select minimum day interval before reservation, Change this to constant
+        LocalDate minimumDateFromNow = ZonedDateTime.now().plusDays(minDayInterval).toLocalDate();
+        if (minimumDateFromNow.isAfter(request.getCheckInDate().toLocalDate())
+                || minimumDateFromNow.isAfter(request.getCheckOutDate().toLocalDate())) {
+            throw new InvalidAttributeException(RESERVATION_DATE_TOO_CLOSE,
+                    MessageFormat.format("Can reserve a room after {0} days from today which is {1}.", minDayInterval, minimumDateFromNow.format(DateTimeFormatter.ISO_LOCAL_DATE)));
+        }
     }
 }

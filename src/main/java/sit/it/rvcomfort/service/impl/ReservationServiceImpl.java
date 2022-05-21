@@ -111,7 +111,7 @@ public class ReservationServiceImpl implements ReservationService {
         }
 
         // Check if check-in-date or check-out-date before minimum interval before reserveation date
-        int minDayInterval = 2; //TODO: Select minimum day interval before reservation, Change this to constant
+        int minDayInterval = 1; //TODO: Select minimum day interval before reservation, Change this to constant
         LocalDate minimumDateFromNow = ZonedDateTime.now().plusDays(minDayInterval).toLocalDate();
         if (minimumDateFromNow.isAfter(request.getCheckInDate().toLocalDate())
                 || minimumDateFromNow.isAfter(request.getCheckOutDate().toLocalDate())) {

@@ -20,7 +20,7 @@ public interface ReservationService {
 
 //    ReservationResponse changeRoomReservationDetail(UpdateReservationRequest request);
 
-
+//    List<ReservedDate> getReservedDateByRoomType(Integer typeId);
 
 
 }

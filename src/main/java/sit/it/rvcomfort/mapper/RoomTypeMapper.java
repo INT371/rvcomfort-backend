@@ -2,15 +2,19 @@ package sit.it.rvcomfort.mapper;
 
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
+import sit.it.rvcomfort.model.entity.Room;
 import sit.it.rvcomfort.model.entity.RoomType;
 import sit.it.rvcomfort.model.request.room.MultipleRoomTypeRequest;
 import sit.it.rvcomfort.model.request.room.RoomTypeRequest;
 import sit.it.rvcomfort.model.request.room.UpdateRoomTypeRequest;
 import sit.it.rvcomfort.model.response.RoomTypeResponse;
 import sit.it.rvcomfort.model.response.RoomTypeResponse.RoomTypeImageResponse;
+import sit.it.rvcomfort.model.response.RoomTypeWithRoomResponse;
 import sit.it.rvcomfort.model.response.SaveRoomTypeResponse;
+import sit.it.rvcomfort.model.response.SimpleRoomResponse;
 import sit.it.rvcomfort.util.TimeUtils;
 
 import java.util.List;
@@ -25,14 +29,6 @@ public interface RoomTypeMapper {
 
     RoomTypeResponse from(RoomType roomType);
 
-    SaveRoomTypeResponse addFrom(RoomTypeResponse roomType);
-
-    RoomType from(MultipleRoomTypeRequest request);
-
-    RoomType from(RoomTypeRequest request);
-
-    void update(@MappingTarget RoomType roomType, UpdateRoomTypeRequest request);
-
     @AfterMapping
     default void after(@MappingTarget RoomTypeResponse.RoomTypeResponseBuilder target, RoomType roomType) {
 
@@ -46,17 +42,56 @@ public interface RoomTypeMapper {
 
     }
 
-    @AfterMapping
-    default void after(@MappingTarget RoomType.RoomTypeBuilder target, RoomTypeRequest request) {
-        target.typeId(0);
-        target.createdAt(TimeUtils.now());
-    }
+    SaveRoomTypeResponse addFrom(RoomTypeResponse roomType);
+
+    RoomType from(MultipleRoomTypeRequest request);
 
     @AfterMapping
     default void after(@MappingTarget RoomType.RoomTypeBuilder target, MultipleRoomTypeRequest request) {
         target.typeId(0);
         target.createdAt(TimeUtils.now());
     }
+
+    RoomType from(RoomTypeRequest request);
+
+    @AfterMapping
+    default void after(@MappingTarget RoomType.RoomTypeBuilder target, RoomTypeRequest request) {
+        target.typeId(0);
+        target.createdAt(TimeUtils.now());
+    }
+
+    @Mapping(target = "typeId", source = "roomType.typeId")
+    @Mapping(target = "typeName", source = "roomType.typeName")
+    @Mapping(target = "description", source = "roomType.description")
+    @Mapping(target = "price", source = "roomType.price")
+    @Mapping(target = "maxCapacity", source = "roomType.maxCapacity")
+    @Mapping(target = "policy", source = "roomType.policy")
+    @Mapping(target = "images", ignore = true)
+    @Mapping(target = "rooms", ignore = true)
+    RoomTypeWithRoomResponse from(RoomType roomType, List<Room> roomList);
+
+    @AfterMapping
+    default void after(@MappingTarget RoomTypeWithRoomResponse.RoomTypeWithRoomResponseBuilder target, RoomType roomType, List<Room> roomList) {
+
+        List<RoomTypeImageResponse> imageResponses = roomType.getImages().stream()
+                .map(roomTypeImage -> RoomTypeImageResponse.builder()
+                        .id(roomTypeImage.getId())
+                        .image(roomTypeImage.getImage())
+                        .build())
+                .collect(Collectors.toList());
+        target.images(imageResponses);
+
+        List<SimpleRoomResponse> simpleRoomResponses = roomList.stream()
+                .map(room -> SimpleRoomResponse.builder()
+                        .roomId(room.getRoomId())
+                        .roomName(room.getRoomName())
+                        .build())
+                .collect(Collectors.toList());
+        target.rooms(simpleRoomResponses);
+
+    }
+
+    void update(@MappingTarget RoomType roomType, UpdateRoomTypeRequest request);
 
     @AfterMapping
     default void after(@MappingTarget RoomType target, UpdateRoomTypeRequest request) {
