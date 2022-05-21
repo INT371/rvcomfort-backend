@@ -1,5 +1,6 @@
 package sit.it.rvcomfort.exception;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import sit.it.rvcomfort.util.TimeUtils;
 
 import static sit.it.rvcomfort.exception.response.ExceptionResponse.ERROR_CODE.INTERNAL_SERVER_ERROR;
 
+@Slf4j
 @ControllerAdvice
 public class ExceptionHandlling extends ResponseEntityExceptionHandler {
 
@@ -48,6 +50,7 @@ public class ExceptionHandlling extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> exceptionsHandle(Exception ex, WebRequest request){
         ExceptionResponse response = new ExceptionResponse(INTERNAL_SERVER_ERROR, INTERNAL_SERVER_ERROR.getValue(), ex.getMessage(), TimeUtils.now());
+        log.error("[Exception Handler] Exception occured: {}", ex);
         return handleExceptionInternal(ex, response, new HttpHeaders(), HttpStatus.INTERNAL_SERVER_ERROR, request);
     }
 

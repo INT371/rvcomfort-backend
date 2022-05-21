@@ -5,12 +5,10 @@ import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import sit.it.rvcomfort.model.request.room.MultipleRoomTypeRequest;
-import sit.it.rvcomfort.model.request.room.RoomRequest;
-import sit.it.rvcomfort.model.request.room.RoomTypeRequest;
-import sit.it.rvcomfort.model.request.room.UpdateRoomTypeRequest;
+import sit.it.rvcomfort.model.request.room.*;
 import sit.it.rvcomfort.model.response.RoomResponse;
 import sit.it.rvcomfort.model.response.RoomTypeResponse;
+import sit.it.rvcomfort.model.response.RoomTypeWithRoomResponse;
 import sit.it.rvcomfort.model.response.SaveRoomTypeResponse;
 import sit.it.rvcomfort.service.RoomService;
 
@@ -55,6 +53,16 @@ public class RoomController {
     @GetMapping("/type/name/{typeName}")
     public RoomTypeResponse retrieveRoomTypeByName(@PathVariable("typeName") String typeName) {
         return service.getRoomType(typeName);
+    }
+
+    @GetMapping("/type/room/{typeId}")
+    public RoomTypeWithRoomResponse retrieveRoomTypeWithRooms(@PathVariable("typeId") Integer typeId) {
+        return service.getRoomTypeWithRoom(typeId);
+    }
+
+    @PostMapping("/type/filter")
+    public List<RoomTypeResponse> filterAvailableRoomType(@Validated @RequestBody RoomFilterRequest request) {
+        return service.filterRoomWith(request);
     }
 
     @PostMapping(value = "/type", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})

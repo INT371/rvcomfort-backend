@@ -9,6 +9,7 @@ import java.time.ZonedDateTime;
 
 @Entity
 @Data
+
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,6 +25,7 @@ public class RoomTypeImage implements Serializable {
     @JoinColumn(name = "type_id")
     @JsonBackReference
     @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private RoomType type;
 
     @Column(name = "image")
