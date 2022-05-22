@@ -362,17 +362,16 @@ public class RoomServiceImpl implements RoomService {
                         !roomTypeCountMap.get(roomType.getTypeId()).equals(reservedRoomMap.get(roomType.getTypeId()))
                 )
                 .filter(roomType -> {
-                    boolean check = true;
                     if(request.getMinPrice() != null && roomType.getPrice().compareTo(request.getMinPrice()) < 0 ) {
                         return false;
                     }
                     if(request.getMaxPrice() != null && roomType.getPrice().compareTo(request.getMaxPrice()) > 0 ) {
                         return false;
                     }
-                    if(request.getNumOfPerson() != null && Integer.compare(roomType.getMaxCapacity(), request.getNumOfPerson()) < 0 ) {
+                    if(request.getNumOfPerson() != null && roomType.getMaxCapacity() < request.getNumOfPerson()) {
                         return false;
                     }
-                    return check;
+                    return true;
                 })
                 .collect(Collectors.toList());
 
