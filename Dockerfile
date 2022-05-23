@@ -1,9 +1,7 @@
-FROM openjdk:11 as build
-COPY mvnw .
-COPY .mvn .mvn
-COPY pom.xml .
-COPY src src
-RUN ./mvnw clean install -DskipTests
+FROM maven:3.8.5-jdk-11 as build
+COPY . .
+RUN mvn clean install -DskipTests
+RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
 
 FROM openjdk:11
 VOLUME /tmp
