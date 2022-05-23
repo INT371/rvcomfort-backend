@@ -28,6 +28,7 @@ public class ExceptionResponse {
         ROOM_INVALID_ATTRIBUTE(20000),
         ROOM_NOT_FOUND(20001),
         DUPLICATE_ROOM_NAME(20002),
+        ROOM_NOT_AVAILABLE(20003),
 
         // RoomType exception 3xxxx
         ROOM_TYPE_INVALID_ATTRIBUTE(30000),

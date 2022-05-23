@@ -21,8 +21,8 @@ public class ReservationRequest implements BaseRequest {
     private Integer userId;
 
     @NotNull
-    @JsonProperty("room_id")
-    private Integer roomId;
+    @JsonProperty("type_id")
+    private Integer typeId;
 
     @JsonProperty("check_in_date")
     private ZonedDateTime checkInDate;
