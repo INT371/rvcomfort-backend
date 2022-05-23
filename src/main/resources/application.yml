@@ -8,6 +8,24 @@ spring:
       max-request-size: 70MB
   jackson:
     time-zone: GMT+7
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_SCHEMA}?serverTimezone=Asia/Bangkok&useUnicode=yes&characterEncoding=UTF-8
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  jpa:
+    properties:
+      hibernate.dialect: org.hibernate.dialect.MySQL8Dialect
+      hibernate.generate_statistics: true
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration/main
+    url: jdbc:mysql://${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_SCHEMA}?serverTimezone=Asia/Bangkok&useUnicode=yes&characterEncoding=UTF-8&createDatabaseIfNotExist=true
+    user: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
 
 ## Custom Properties ##
 rvcomfort:

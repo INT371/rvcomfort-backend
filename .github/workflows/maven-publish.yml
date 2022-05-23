@@ -27,7 +27,7 @@ jobs:
       uses: docker/build-push-action@v3
       with:
         push: true
-        tags: ghcr.io/INT371/rvcomfort-backend:latest
+        tags: ghcr.io/int371/rvcomfort-backend:latest
 
   deploy:
     name: Deploy
