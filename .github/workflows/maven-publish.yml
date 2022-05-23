@@ -37,6 +37,7 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         script: |
           cd ./rvcomfort/rvcomfort-backend
+          docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
           docker-compose stop
           docker-compose rm -f
           docker-compose pull   
