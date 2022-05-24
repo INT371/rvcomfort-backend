@@ -5,7 +5,6 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.factory.Mappers;
-import sit.it.rvcomfort.model.entity.Room;
 import sit.it.rvcomfort.model.entity.RoomType;
 import sit.it.rvcomfort.model.request.room.MultipleRoomTypeRequest;
 import sit.it.rvcomfort.model.request.room.RoomTypeRequest;
@@ -60,18 +59,18 @@ public interface RoomTypeMapper {
         target.createdAt(TimeUtils.now());
     }
 
-    @Mapping(target = "typeId", source = "roomType.typeId")
-    @Mapping(target = "typeName", source = "roomType.typeName")
-    @Mapping(target = "description", source = "roomType.description")
-    @Mapping(target = "price", source = "roomType.price")
-    @Mapping(target = "maxCapacity", source = "roomType.maxCapacity")
-    @Mapping(target = "policy", source = "roomType.policy")
+    @Mapping(target = "typeId", source = "typeId")
+    @Mapping(target = "typeName", source = "typeName")
+    @Mapping(target = "description", source = "description")
+    @Mapping(target = "price", source = "price")
+    @Mapping(target = "maxCapacity", source = "maxCapacity")
+    @Mapping(target = "policy", source = "policy")
     @Mapping(target = "images", ignore = true)
-    @Mapping(target = "rooms", ignore = true)
-    RoomTypeWithRoomResponse from(RoomType roomType, List<Room> roomList);
+    @Mapping(target = "rooms", source = "rooms")
+    RoomTypeWithRoomResponse fromRoomType(RoomType roomType);
 
     @AfterMapping
-    default void after(@MappingTarget RoomTypeWithRoomResponse.RoomTypeWithRoomResponseBuilder target, RoomType roomType, List<Room> roomList) {
+    default void after(@MappingTarget RoomTypeWithRoomResponse.RoomTypeWithRoomResponseBuilder target, RoomType roomType) {
 
         List<RoomTypeImageResponse> imageResponses = roomType.getImages().stream()
                 .map(roomTypeImage -> RoomTypeImageResponse.builder()
@@ -81,7 +80,7 @@ public interface RoomTypeMapper {
                 .collect(Collectors.toList());
         target.images(imageResponses);
 
-        List<SimpleRoomResponse> simpleRoomResponses = roomList.stream()
+        List<SimpleRoomResponse> simpleRoomResponses = roomType.getRooms().stream()
                 .map(room -> SimpleRoomResponse.builder()
                         .roomId(room.getRoomId())
                         .roomName(room.getRoomName())

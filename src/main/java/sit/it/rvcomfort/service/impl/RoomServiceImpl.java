@@ -39,6 +39,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static sit.it.rvcomfort.exception.response.ExceptionResponse.ERROR_CODE.*;
@@ -123,7 +124,10 @@ public class RoomServiceImpl implements RoomService {
         // STEP 1: Validation
         log.info("[addRoomType] STEP 1: Validation");
         validateIfRoomTypeIsDuplicated(request.getTypeName());
-        validateIsImageEmpty(images);
+        boolean isImageEmpty = validateIsImageEmpty(images);
+        if(isImageEmpty) {
+            throw new NotFoundException(EMPTY_LIST, "Image not found.");
+        }
         // STEP 2: Mapped to entity
         RoomType roomType = RoomTypeMapper.INSTANCE.from(request);
         log.info("[addRoomType] STEP 2: mapped to entity '{}'", objectMapper.writeValueAsString(roomType));
@@ -203,6 +207,7 @@ public class RoomServiceImpl implements RoomService {
         // STEP 1: Validation
         // STEP 1.1:
         log.info("[updateRoomType] STEP 1: Validation Started");
+        log.info("[updateRoomType] STEP 1.1: Find roomtype Started");
         roomTypeRepo.findRoomTypeByTypeIdNotAndTypeName(typeId, request.getTypeName())
                 .ifPresent(roomType -> {
                     throw new DuplicateDataException(DUPLICATE_ROOM_TYPE,
@@ -210,12 +215,14 @@ public class RoomServiceImpl implements RoomService {
                 });
 
         // STEP 1.2: Validate exist room type
+        log.info("[updateRoomType] STEP 1.2: Find roomtype by id Started");
         RoomType roomType = roomTypeRepo.findById(typeId)
                 .orElseThrow(() -> new NotFoundException(ROOM_TYPE_NOT_FOUND,
                         MessageFormat.format("The room type with id: {0} does not exist in the database.", typeId)));
 
         // STEP 1.3: Validate image list must not empty
-        validateIsImageEmpty(images);
+        log.info("[updateRoomType] STEP 1.3: validated image by id Started");
+        boolean isImageEmpty = validateIsImageEmpty(images);
         log.info("[updateRoomType] STEP 1: Validation End");
 
         // STEP 2: Mapped request to entity
@@ -225,24 +232,28 @@ public class RoomServiceImpl implements RoomService {
         log.info("[updateRoomType] STEP 2.2: Get old image: {}", objectMapper.writeValueAsString(oldImages));
 
         // STEP 3: Save image -> set RoomTypeImage entity -> remove current image in database
-        List<RoomTypeImage> imageList = storeImages(images, roomType);
-        log.info("[updateRoomType] STEP 3.1: Save image: {}", objectMapper.writeValueAsString(imageList));
-        roomType.setImages(imageList);
-        log.info("[updateRoomType] STEP 3.2: Set room type image: {}", objectMapper.writeValueAsString(roomType));
-        roomTypeImageRepo.deleteByTypeTypeId(typeId);
-        log.info("[updateRoomType] STEP 3.3: Delete old foreign key");
+        if (!isImageEmpty){
+            List<RoomTypeImage> imageList = storeImages(images, roomType);
+            log.info("[updateRoomType] STEP 3.1: Save image: {}", objectMapper.writeValueAsString(imageList));
+            roomType.setImages(imageList);
+            log.info("[updateRoomType] STEP 3.2: Set room type image: {}", objectMapper.writeValueAsString(roomType));
+            roomTypeImageRepo.deleteByTypeTypeId(typeId);
+            log.info("[updateRoomType] STEP 3.3: Delete old foreign key");
+        }
 
         // STEP 4: Save room type to database
         RoomType updatedRoomType = roomTypeRepo.save(roomType);
         log.info("[updateRoomType] STEP 4: Save room to database: {}", objectMapper.writeValueAsString(updatedRoomType));
 
         // STEP 5: Remove old image
-        log.info("[updateRoomType] STEP 5: Remove old image Started");
-        oldImages.stream()
-                .map(RoomTypeImage::getImage)
-                .forEach(s -> {
-                    roomImageService.deleteOne(s);
-                });
+        if (!isImageEmpty) {
+            log.info("[updateRoomType] STEP 5: Remove old image Started");
+            oldImages.stream()
+                    .map(RoomTypeImage::getImage)
+                    .forEach(s -> {
+                        roomImageService.deleteOne(s);
+                    });
+        }
 
         // STEP 6: Return response
         return RoomTypeMapper.INSTANCE.from(updatedRoomType);
@@ -256,10 +267,15 @@ public class RoomServiceImpl implements RoomService {
         return imageList;
     }
 
-    private void validateIsImageEmpty(MultipartFile[] images) {
-        if (images.length <= 0) {
-            throw new NotFoundException(EMPTY_LIST, "Image array is empty");
-        }
+    private boolean validateIsImageEmpty(MultipartFile[] images) {
+        AtomicBoolean check = new AtomicBoolean(false);
+        Arrays.stream(images).forEach(multipartFile -> {
+            if(multipartFile.isEmpty()) {
+               check.set(true);
+               return;
+            }
+        });
+        return check.get();
     }
 
     @Override
@@ -298,13 +314,10 @@ public class RoomServiceImpl implements RoomService {
                 .orElseThrow(() -> new NotFoundException(ROOM_TYPE_NOT_FOUND,
                         MessageFormat.format("The room type with id: {0} does not exist in the database.", typeId)));
 
-        // STEP 2: Retrieve rooms this type from database
-        List<Room> roomList = roomRepo.findRoomByRoomType(roomType);
+        // STEP 2: Mapped entities to response
+        RoomTypeWithRoomResponse response = RoomTypeMapper.INSTANCE.fromRoomType(roomType);
 
-        // STEP 3: Mapped entities to response
-        RoomTypeWithRoomResponse response = RoomTypeMapper.INSTANCE.from(roomType, roomList);
-
-        // STEP 4: Return response
+        // STEP 3: Return response
         return response;
     }
 

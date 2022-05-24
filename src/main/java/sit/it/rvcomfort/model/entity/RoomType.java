@@ -48,6 +48,7 @@ public class RoomType implements Serializable {
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.MERGE, orphanRemoval = true)
     @JsonBackReference
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @EqualsAndHashCode.Exclude
     private List<Room> rooms;
 
 }

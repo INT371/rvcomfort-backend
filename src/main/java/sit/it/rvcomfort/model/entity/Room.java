@@ -2,10 +2,7 @@ package sit.it.rvcomfort.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -41,6 +38,7 @@ public class Room implements Serializable {
     @OneToMany(mappedBy = "room", cascade = CascadeType.MERGE, orphanRemoval = true)
     @JsonBackReference
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @EqualsAndHashCode.Exclude
     private List<Reservation> reservations;
 
 }
