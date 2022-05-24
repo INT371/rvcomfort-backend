@@ -248,15 +248,19 @@ public class RoomServiceImpl implements RoomService {
         // STEP 5: Remove old image
         if (!isImageEmpty) {
             log.info("[updateRoomType] STEP 5: Remove old image Started");
-            oldImages.stream()
-                    .map(RoomTypeImage::getImage)
-                    .forEach(s -> {
-                        roomImageService.deleteOne(s);
-                    });
+            removeRoomTypeImages(oldImages);
         }
 
         // STEP 6: Return response
         return RoomTypeMapper.INSTANCE.from(updatedRoomType);
+    }
+
+    private void removeRoomTypeImages(List<RoomTypeImage> oldImages) {
+        oldImages.stream()
+                .map(RoomTypeImage::getImage)
+                .forEach(s -> {
+                    roomImageService.deleteOne(s);
+                });
     }
 
     private List<RoomTypeImage> storeImages(MultipartFile[] images, RoomType roomType) {
@@ -324,15 +328,17 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public void deleteRoomType(int typeId) {
         // STEP 1: Check if delete room type available
-        roomTypeRepo.findById(typeId)
+        RoomType roomType = roomTypeRepo.findById(typeId)
                 .orElseThrow(() -> new NotFoundException(ROOM_TYPE_NOT_FOUND,
                         MessageFormat.format("The room type with id: {0} does not exist in the database.", typeId)));
 
-        // STEP 2: Check if room type is deletable (TODO: implemented that later. with better approach than cascade delete)
+        // STEP 2: Check if room type is deletable (TODO: change from cascade delete to other methods like status check or sth else)
 
-        // STEP x: Delete all picture of roomtype (if cascade delete)
+        // STEP 3: Delete all picture of roomtype (if cascade delete)
+        roomTypeImageRepo.deleteByTypeTypeId(typeId);
+        removeRoomTypeImages(roomType.getImages());
 
-        // STEP 3: Delete the room
+        // STEP 4: Delete the room
         roomTypeRepo.deleteById(typeId);
     }
 
@@ -343,7 +349,8 @@ public class RoomServiceImpl implements RoomService {
                 .orElseThrow(() -> new NotFoundException(ROOM_NOT_FOUND,
                         MessageFormat.format("The room with id: {0} does not exist in the database.", roomId)));
 
-        // STEP 2: Check if room is deletable (TODO: implemented that later. with better approach than cascade delete)
+        // STEP 2: Check if room is deletable (TODO: change from cascade delete to other methods)
+        // If room has been reserved
 
 
         // STEP 3: Delete the room
