@@ -1,5 +1,7 @@
 package sit.it.rvcomfort.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.persistence.*;
@@ -42,5 +44,10 @@ public class RoomType implements Serializable {
 
     @Column(name = "updated_at")
     private ZonedDateTime updatedAt;
+
+    @OneToMany(mappedBy = "roomType", cascade = CascadeType.MERGE, orphanRemoval = true)
+    @JsonBackReference
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private List<Room> rooms;
 
 }

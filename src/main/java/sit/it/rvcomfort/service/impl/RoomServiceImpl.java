@@ -317,6 +317,8 @@ public class RoomServiceImpl implements RoomService {
 
         // STEP 2: Check if room type is deletable (TODO: implemented that later. with better approach than cascade delete)
 
+        // STEP x: Delete all picture of roomtype (if cascade delete)
+
         // STEP 3: Delete the room
         roomTypeRepo.deleteById(typeId);
     }
