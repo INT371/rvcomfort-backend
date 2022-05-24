@@ -179,6 +179,7 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<finalName>rvcomfort_backend</finalName>
 	</build>
 
 </project>
