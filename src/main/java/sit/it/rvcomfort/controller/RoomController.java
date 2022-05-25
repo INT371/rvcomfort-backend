@@ -60,6 +60,12 @@ public class RoomController {
         return service.getRoomTypeWithRoom(typeId);
     }
 
+    @GetMapping("/type/room")
+    public List<RoomTypeWithRoomResponse> retrieveAllRoomTypeWithRooms() {
+        return service.getAllRoomTypeWithRoom();
+    }
+
+
     @PostMapping("/type/filter")
     public List<RoomTypeResponse> filterAvailableRoomType(@Validated @RequestBody RoomFilterRequest request) {
         return service.filterRoomWith(request);
