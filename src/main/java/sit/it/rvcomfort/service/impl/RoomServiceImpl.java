@@ -326,6 +326,19 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    public List<RoomTypeWithRoomResponse> getAllRoomTypeWithRoom() {
+        // STEP 1: Get all room type
+        List<RoomType> roomTypeList = roomTypeRepo.findAll();
+
+        // STEP 2: Mapped to response list
+        List<RoomTypeWithRoomResponse> responseList = roomTypeList.stream()
+                .map(RoomTypeMapper.INSTANCE::fromRoomType)
+                .collect(Collectors.toList());
+
+        return responseList;
+    }
+
+    @Override
     public void deleteRoomType(int typeId) {
         // STEP 1: Check if delete room type available
         RoomType roomType = roomTypeRepo.findById(typeId)

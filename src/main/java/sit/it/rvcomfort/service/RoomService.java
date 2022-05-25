@@ -36,6 +36,5 @@ public interface RoomService {
     List<RoomTypeResponse> filterRoomWith(RoomFilterRequest request);
 
     RoomTypeWithRoomResponse getRoomTypeWithRoom(Integer typeId);
-
-
+    List<RoomTypeWithRoomResponse> getAllRoomTypeWithRoom();
 }
