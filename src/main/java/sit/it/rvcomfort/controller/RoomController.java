@@ -97,7 +97,7 @@ public class RoomController {
 
     @PatchMapping(value = "/type/{typeId}", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     public RoomTypeResponse updateRoomType(
-            @RequestParam("images") MultipartFile[] images,
+            @RequestParam(name = "images", required = false) MultipartFile[] images,
             @RequestPart UpdateRoomTypeRequest request,
             @PathVariable("typeId") Integer typeId) {
         return service.updateRoomType(request, images, typeId);

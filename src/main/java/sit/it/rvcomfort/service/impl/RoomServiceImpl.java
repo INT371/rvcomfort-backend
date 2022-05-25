@@ -222,7 +222,9 @@ public class RoomServiceImpl implements RoomService {
 
         // STEP 1.3: Validate image list must not empty
         log.info("[updateRoomType] STEP 1.3: validated image by id Started");
-        boolean isImageEmpty = validateIsImageEmpty(images);
+        boolean isImageEmpty = false;
+        if(images == null) isImageEmpty = true;
+        if(!isImageEmpty) isImageEmpty = validateIsImageEmpty(images);
         log.info("[updateRoomType] STEP 1: Validation End");
 
         // STEP 2: Mapped request to entity
