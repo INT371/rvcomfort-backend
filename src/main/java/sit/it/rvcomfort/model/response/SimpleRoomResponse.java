@@ -13,6 +13,7 @@ import sit.it.rvcomfort.model.BaseResponse;
 @NoArgsConstructor
 public class SimpleRoomResponse implements BaseResponse {
 
+    @JsonProperty("room_id")
     private Integer roomId;
 
     @JsonProperty("room_name")
