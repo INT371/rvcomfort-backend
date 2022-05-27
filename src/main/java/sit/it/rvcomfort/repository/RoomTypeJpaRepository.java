@@ -16,7 +16,7 @@ public interface RoomTypeJpaRepository extends JpaRepository<RoomType, Integer> 
 
     Optional<RoomType> findRoomTypeByTypeIdNotAndTypeName (Integer typeId, String typeName);
 
-    @Query("SELECT rt.typeId AS typeId, COUNT(rt) AS roomCount " +
+    @Query("SELECT rt.typeId AS typeId, COUNT(r.roomId) AS roomCount " +
             "FROM RoomType rt LEFT JOIN Room r ON r.roomType.typeId = rt.typeId " +
             "GROUP BY rt.typeId " +
             "ORDER BY rt.typeId ASC")

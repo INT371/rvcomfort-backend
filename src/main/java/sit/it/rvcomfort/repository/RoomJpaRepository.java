@@ -22,7 +22,7 @@ public interface RoomJpaRepository extends JpaRepository<Room, Integer> {
     @Query("SELECT DISTINCT room " +
             "FROM Room room " +
             "LEFT JOIN Reservation r ON room.roomId = r.room.roomId " +
-            "WHERE room.roomType.typeId = ?1 AND (r.checkOutDate >= ?2 AND r.checkInDate <= ?3) ")
+            "WHERE room.roomType.typeId = ?1 AND (r.checkOutDate > ?2 AND r.checkInDate < ?3) ")
     List<Room> findNotAvailableRoomsFromRoomTypeAndReservationDateTime(Integer typeId, ZonedDateTime checkInDate, ZonedDateTime checkOutDate);
 
 }

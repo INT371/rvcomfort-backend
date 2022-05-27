@@ -396,7 +396,8 @@ public class RoomServiceImpl implements RoomService {
         // STEP 3: Filtering data
 
         roomTypeList = roomTypeList.stream().filter(roomType ->
-                        !roomTypeCountMap.get(roomType.getTypeId()).equals(reservedRoomMap.get(roomType.getTypeId()))
+                        roomTypeCountMap.get(roomType.getTypeId()) != 0
+                        && !roomTypeCountMap.get(roomType.getTypeId()).equals(reservedRoomMap.get(roomType.getTypeId()))
                 )
                 .filter(roomType -> {
                     if(request.getMinPrice() != null && roomType.getPrice().compareTo(request.getMinPrice()) < 0 ) {
